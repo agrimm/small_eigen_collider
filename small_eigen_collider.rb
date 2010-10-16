@@ -1,3 +1,5 @@
+require "timeout"
+
 # FIXME intended structure: 
 # # A class that generates a variety of receivers, methods, parameters and blocks
 # # A class representing a single action
@@ -65,7 +67,9 @@ methods = ["insert", "include?", "gsub", "size", "replace", "to_i", "chomp!", "s
   output_file.puts "Method: " + method.inspect
   output_file.puts "Parameters: " + parameter_objects.inspect
 begin
-  output_file.puts "Result: " + receiver_object.send(method, *parameter_objects).inspect
+  Timeout.timeout(2) do
+    output_file.puts "Result: " + receiver_object.send(method, *parameter_objects, &:consistent_inspect).consistent_inspect
+  end
 rescue Exception => e
   output_file.puts "Failure for #{[receiver_object, method, parameter_objects].inspect}"
 end
