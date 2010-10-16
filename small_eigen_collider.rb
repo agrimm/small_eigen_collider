@@ -26,7 +26,6 @@ if defined?(RUBY_ENGINE)
 else
   output_filename = "#{RUBY_VERSION}_output.txt"
 end
-output_file = File.open(output_filename, "w")
 
 class Object
   def consistent_inspect
@@ -39,6 +38,49 @@ class Enumerable::Enumerator
     "#<Enumerable::Enumerator>"
   end
 end
+
+module SmallEigenCollider
+end
+
+class SmallEigenCollider::Logger
+  def self.new_using_filename(filename)
+    filestream = File.open(filename, "w")
+    new(filestream)
+  end
+
+  def initialize(filestream)
+    @filestream = filestream
+  end
+
+  def log_start
+    @filestream.puts "Start"
+  end
+
+  def log_input_parameters(receiver_object, method, parameter_objects)
+    @filestream.puts "Receiver object: " + receiver_object.inspect
+    @filestream.puts "Method: " + method.inspect
+    @filestream.puts "Parameters: " + parameter_objects.inspect
+  end
+
+  def log_result(result)
+    @filestream.puts "Result: " + result.consistent_inspect
+  end
+
+  def log_failure(receiver_object, method, parameter_objects)
+    @filestream.puts "Failure for #{[receiver_object, method, parameter_objects].inspect}"
+  end
+
+  def log_end
+    @filestream.puts "End"
+    @filestream.puts
+  end
+
+  def close
+    @filestream.close
+  end
+end
+
+logger = SmallEigenCollider::Logger.new_using_filename(output_filename)
 
 # FIXME replace this whitelist of non-risky (I hope!) methods with something more flexible.
 # I can get the list of methods using reflection, but how do I ensure that any operations won't delete the root directory?
@@ -62,18 +104,16 @@ methods = (["insert", "include?", "gsub", "size", "replace", "to_i", "chomp!", "
   # FIXME rather than using Object#inspect, I have to create a method whose output doesn't vary depending on object id
   # or ruby implementation
 
-  output_file.puts "Start"
-  output_file.puts "Receiver object: " + receiver_object.inspect
-  output_file.puts "Method: " + method.inspect
-  output_file.puts "Parameters: " + parameter_objects.inspect
-begin
-  Timeout.timeout(2) do
-    output_file.puts "Result: " + receiver_object.send(method, *parameter_objects, &:consistent_inspect).consistent_inspect
+  logger.log_start
+  logger.log_input_parameters(receiver_object, method, parameter_objects)
+  begin
+    Timeout.timeout(2) do
+      result = receiver_object.send(method, *parameter_objects, &:consistent_inspect)
+      logger.log_result(result)
+    end
+  rescue Exception => e
+    logger.log_failure(receiver_object, method, parameter_objects)
   end
-rescue Exception => e
-  output_file.puts "Failure for #{[receiver_object, method, parameter_objects].inspect}"
+  logger.log_end
 end
-  output_file.puts "End"
-  output_file.puts
-end
-output_file.close
+logger.close
