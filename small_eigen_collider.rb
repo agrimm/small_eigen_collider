@@ -26,6 +26,18 @@ else
 end
 output_file = File.open(output_filename, "w")
 
+class Object
+  def consistent_inspect
+    inspect
+  end
+end
+
+class Enumerable::Enumerator
+  def consistent_inspect
+    "#<Enumerable::Enumerator>"
+  end
+end
+
 # FIXME replace this whitelist of non-risky (I hope!) methods with something more flexible.
 # I can get the list of methods using reflection, but how do I ensure that any operations won't delete the root directory?
 methods = ["insert", "include?", "gsub", "size", "replace", "to_i", "chomp!", "succ", "oct", "to_s", "rstrip", "taguri=", "lines", "capitalize!", "hash", "capitalize", "center", "*", "index", "crypt", "+", "=~", "strip", "each_byte", "gsub!", "count", "delete!", "upcase", "ljust", "delete", "is_binary_data?", "upcase!", "rstrip!", "sum", "eql?", "start_with?", "to_sym", "length", "chop", "to_yaml", "to_f", "tr!", "to_str", "[]", "unpack", "tr", "inspect", "bytes", "strip!", "[]=", "slice!", "split", "sub", "each", "empty?", "swapcase!", "<<", "casecmp", "swapcase", "rindex", "intern", "rpartition", "reverse!", "next!", "lstrip", "hex", "chop!", "match", "each_char", "downcase!", "rjust", "downcase", "squeeze", "squeeze!", "concat", "upto", "end_with?", "slice", "chomp", "<=>", "bytesize", "sub!", "succ!", "each_line", "dump", "==", "scan", "tr_s", "tr_s!", "partition", "is_complex_yaml?", "next", "%", "reverse", "lstrip!", "chars", "taguri"]
