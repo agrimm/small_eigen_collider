@@ -1,0 +1,27 @@
+$:.unshift File.join(File.dirname(__FILE__), "..", "lib")
+require "small_eigen_collider"
+
+# FIXME make a better way to log things
+if defined?(RUBY_ENGINE)
+  output_filename = "#{RUBY_ENGINE}_#{RUBY_VERSION}_output.txt"
+else
+  output_filename = "#{RUBY_VERSION}_output.txt"
+end
+
+logger = SmallEigenCollider::Logger.new_using_filename(output_filename)
+task_creator = SmallEigenCollider::TaskCreator.new
+
+10000.times do
+
+  # FIXME rather than using Object#inspect, I have to create a method whose output doesn't vary depending on object id
+  # or ruby implementation
+
+  logger.log_start
+  task = task_creator.create_task
+
+  logger.log_input_parameters(task)
+  task.run
+  task.log_result(logger)
+  logger.log_end
+end
+logger.close

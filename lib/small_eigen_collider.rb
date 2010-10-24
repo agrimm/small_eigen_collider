@@ -6,13 +6,6 @@ require "timeout"
 # # Module for logging
 # # A monkey-patched method that'd enable an object id and implementation-independent representation of an object
 
-# FIXME make a better way to log things
-if defined?(RUBY_ENGINE)
-  output_filename = "#{RUBY_ENGINE}_#{RUBY_VERSION}_output.txt"
-else
-  output_filename = "#{RUBY_VERSION}_output.txt"
-end
-
 class Object
   def consistent_inspect
     inspect
@@ -118,6 +111,7 @@ class SmallEigenCollider::Task
   def run
     begin
       Timeout.timeout(2) do
+        # FIXME add a random block
         @result = @receiver_object.send(@method, *@parameter_objects, &:consistent_inspect)
         @status = :success
       end
@@ -138,22 +132,3 @@ class SmallEigenCollider::Task
     end
   end
 end
-
-logger = SmallEigenCollider::Logger.new_using_filename(output_filename)
-task_creator = SmallEigenCollider::TaskCreator.new
-
-10000.times do
-  # FIXME add a random block
-
-  # FIXME rather than using Object#inspect, I have to create a method whose output doesn't vary depending on object id
-  # or ruby implementation
-
-  logger.log_start
-  task = task_creator.create_task
-
-  logger.log_input_parameters(task)
-  task.run
-  task.log_result(logger)
-  logger.log_end
-end
-logger.close
