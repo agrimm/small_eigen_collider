@@ -111,10 +111,16 @@ class SmallEigenCollider::Task
   def run
     begin
       Timeout.timeout(2) do
-        # FIXME add a random block
-        @result = @receiver_object.send(@method, *@parameter_objects, &:consistent_inspect)
-        @status = :success
+        secure_thread = Thread.new do
+          $SAFE = 2
+          # FIXME add a random block
+          @result = @receiver_object.send(@method, *@parameter_objects, &:consistent_inspect)
+          @status = :success
+        end
+        secure_thread.join
       end
+    rescue SecurityError
+      @status = :security_error
     rescue Timeout::Error
       @status = :timeout
     rescue Exception
@@ -124,11 +130,15 @@ class SmallEigenCollider::Task
 
   def log_result(logger)
     case @status
-    when :timeout, :failure
+    when :timeout, :failure, :security_error
       logger.log_failure(@receiver_object, @method, @parameter_objects)
     when :success
       logger.log_result(@result)
     else raise
     end
+  end
+
+  def security_error?
+    @status == :security_error
   end
 end

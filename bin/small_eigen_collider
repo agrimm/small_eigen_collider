@@ -11,7 +11,7 @@ end
 logger = SmallEigenCollider::Logger.new_using_filename(output_filename)
 task_creator = SmallEigenCollider::TaskCreator.new
 
-10000.times do
+1000.times do
 
   # FIXME rather than using Object#inspect, I have to create a method whose output doesn't vary depending on object id
   # or ruby implementation
