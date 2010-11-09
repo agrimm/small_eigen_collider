@@ -7,8 +7,9 @@ output_filename = [ruby_engine, RUBY_VERSION, RUBY_PATCHLEVEL, "output.txt"].joi
 
 logger = SmallEigenCollider::Logger.new_using_filename(output_filename)
 task_creator = SmallEigenCollider::TaskCreator.new
+iterations = 2000
 
-1000.times do
+iterations.times do |i|
 
   # FIXME rather than using Object#inspect, I have to create a method whose output doesn't vary depending on object id
   # or ruby implementation
