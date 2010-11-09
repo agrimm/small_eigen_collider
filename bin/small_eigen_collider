@@ -2,11 +2,8 @@ $:.unshift File.join(File.dirname(__FILE__), "..", "lib")
 require "small_eigen_collider"
 
 # FIXME make a better way to log things
-if defined?(RUBY_ENGINE)
-  output_filename = "#{RUBY_ENGINE}_#{RUBY_VERSION}_output.txt"
-else
-  output_filename = "#{RUBY_VERSION}_output.txt"
-end
+ruby_engine = defined?(RUBY_ENGINE) ? RUBY_ENGINE : "unknown_engine"
+output_filename = [ruby_engine, RUBY_VERSION, RUBY_PATCHLEVEL, "output.txt"].join("_")
 
 logger = SmallEigenCollider::Logger.new_using_filename(output_filename)
 task_creator = SmallEigenCollider::TaskCreator.new
