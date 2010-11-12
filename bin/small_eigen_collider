@@ -1,11 +1,15 @@
 $:.unshift File.join(File.dirname(__FILE__), "..", "lib")
 require "small_eigen_collider"
 
-# FIXME make a better way to log things
-ruby_engine = defined?(RUBY_ENGINE) ? RUBY_ENGINE : "unknown_engine"
-output_filename = [ruby_engine, RUBY_VERSION, RUBY_PATCHLEVEL, "output.txt"].join("_")
+def determine_output_filename
+  # FIXME be able to include the ruby implementation's version
+  # FIXME should the output filename be chosen by the program like this?
+  ruby_engine = defined?(RUBY_ENGINE) ? RUBY_ENGINE : "unknown_engine"
+  output_filename = [ruby_engine, RUBY_VERSION, RUBY_PATCHLEVEL, "output.txt"].join("_")
+  output_filename
+end
 
-logger = SmallEigenCollider::Logger.new_using_filename(output_filename)
+logger = SmallEigenCollider::Logger.new_using_filename(determine_output_filename)
 task_creator = SmallEigenCollider::TaskCreator.new
 iterations = 2000
 
