@@ -142,4 +142,8 @@ class SmallEigenCollider::Task
   def security_error?
     @status == :security_error
   end
+
+  def success?
+    @status == :success
+  end
 end

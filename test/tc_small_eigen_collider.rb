@@ -13,3 +13,11 @@ class TestSecurity < Test::Unit::TestCase
     assert deletion_task.security_error?, "#{deletion_task.inspect} attempts to delete a file"
   end
 end
+
+class TestProgramWorks < Test::Unit::TestCase
+  def test_program_works
+    addition_task = SmallEigenCollider::Task.new(1, "+", [1])
+    addition_task.run
+    assert addition_task.success?, "Can't add 1 and 1 together"
+  end
+end
