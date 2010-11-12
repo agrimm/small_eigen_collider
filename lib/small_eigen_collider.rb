@@ -101,11 +101,23 @@ class SmallEigenCollider::TaskCreator
 end
 
 class SmallEigenCollider::Task
-  attr_reader :receiver_object, :method, :parameter_objects
-
   def initialize(receiver_object, method, parameter_objects)
-    @receiver_object, @method, @parameter_objects = receiver_object, method, parameter_objects
+    @original_receiver_object, @original_method, @original_parameter_objects = receiver_object, method, parameter_objects
+    reinitialize
+  end
+
+  # FIXME there should be a correct name for this
+  def reinitialize
+    @receiver_object, @method, @parameter_objects = [@original_receiver_object, @original_method, @original_parameter_objects].map {|object| safe_dup(object)}
     @status = :not_run_yet
+  end
+
+  def safe_dup(object)
+    case object
+    when Fixnum, Symbol, NilClass, TrueClass, FalseClass then return object
+    when Array then return object.map{|element| safe_dup(element)}
+    else return object.dup
+    end
   end
 
   def run
@@ -145,5 +157,17 @@ class SmallEigenCollider::Task
 
   def success?
     @status == :success
+  end
+
+  def receiver_object
+    @original_receiver_object
+  end
+
+  def method
+    @original_method
+  end
+
+  def parameter_objects
+    @original_parameter_objects
   end
 end

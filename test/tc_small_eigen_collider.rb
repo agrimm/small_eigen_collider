@@ -1,6 +1,7 @@
 $:.unshift File.join(File.dirname(__FILE__), "..", "lib")
 require "small_eigen_collider"
 require "test/unit"
+require "yaml" # Should this be here?
 
 class TestSecurity < Test::Unit::TestCase
 
@@ -19,5 +20,18 @@ class TestProgramWorks < Test::Unit::TestCase
     addition_task = SmallEigenCollider::Task.new(1, "+", [1])
     addition_task.run
     assert addition_task.success?, "Can't add 1 and 1 together"
+  end
+end
+
+class TestRoundtripping < Test::Unit::TestCase
+  def test_roundtripping_works
+    side_effective_task = SmallEigenCollider::Task.new("a", "<<", "b")
+    side_effective_task.run
+    first_yaml = YAML.dump(side_effective_task)
+    yaml_created_task = YAML.load(first_yaml)
+    yaml_created_task.reinitialize
+    yaml_created_task.run
+    second_yaml = YAML.dump(yaml_created_task)
+    assert_equal first_yaml, second_yaml, "Side effects seem to be preventing a certain yaml being converted into an object that creates the same yaml"
   end
 end
