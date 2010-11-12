@@ -64,9 +64,9 @@ class SmallEigenCollider::TaskCreator
     # FIXME make this configurable
     srand(42)
 
-    # FIXME make a better way of creating random objects
+    # FIXME make an even better way of creating random objects
     @objects = []
-    file = File.open("random_text.txt")
+    file = File.open("README.rdoc")
     100.times do
       @objects << file.read(rand(20))
     end
