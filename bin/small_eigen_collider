@@ -1,6 +1,8 @@
 $:.unshift File.join(File.dirname(__FILE__), "..", "lib")
 require "small_eigen_collider"
 
+yaml_filename = "tasks.yml"
+
 def determine_output_filename
   # FIXME be able to include the ruby implementation's version
   # FIXME should the output filename be chosen by the program like this?
@@ -9,21 +11,12 @@ def determine_output_filename
   output_filename
 end
 
-logger = SmallEigenCollider::Logger.new_using_filename(determine_output_filename)
-task_creator = SmallEigenCollider::TaskCreator.new
-iterations = 2000
-
-iterations.times do |i|
-
-  # FIXME rather than using Object#inspect, I have to create a method whose output doesn't vary depending on object id
-  # or ruby implementation
-
-  logger.log_start
-  task = task_creator.create_task
-
-  logger.log_input_parameters(task)
-  task.run
-  task.log_result(logger)
-  logger.log_end
+if File.exist?(yaml_filename)
+  task_list = SmallEigenCollider::TaskList.new_using_yaml(yaml_filename)
+  task_list.run_and_log_each_task(determine_output_filename)
+else
+  iterations = 2000
+  task_list = SmallEigenCollider::TaskList.new_using_creator(iterations)
+  task_list.run_and_log_each_task(determine_output_filename)
+  task_list.dump_tasks_to_yaml(yaml_filename)
 end
-logger.close

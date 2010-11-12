@@ -1,4 +1,5 @@
 require "timeout"
+require "yaml"
 
 # FIXME intended structure: 
 # # A class that generates a variety of receivers, methods, parameters and blocks
@@ -97,6 +98,43 @@ class SmallEigenCollider::TaskCreator
 
     task = SmallEigenCollider::Task.new(receiver_object, method, parameter_objects)
     task
+  end
+end
+
+class SmallEigenCollider::TaskList
+  def self.new_using_creator(iterations)
+    task_creator = SmallEigenCollider::TaskCreator.new
+    tasks = iterations.times.map {task_creator.create_task}
+    new(tasks)
+  end
+
+  def self.new_using_yaml(yaml_filename)
+    tasks = YAML.load_file(yaml_filename)
+    tasks.each {|task| task.reinitialize}
+    new(tasks)
+  end
+
+  def initialize(tasks)
+    @tasks = tasks
+  end
+
+  def run_and_log_each_task(logger_filename)
+    logger = SmallEigenCollider::Logger.new_using_filename(logger_filename)
+    @tasks.each do |task|
+      # FIXME rather than using Object#inspect, I have to create a method whose output doesn't vary depending on object id
+      # or ruby implementation
+
+      logger.log_start
+      logger.log_input_parameters(task)
+      task.run
+      task.log_result(logger)
+      logger.log_end
+    end
+    logger.close
+  end
+
+  def dump_tasks_to_yaml(yaml_filename)
+    File.open(yaml_filename, "w") {|output_yaml_file| YAML.dump(@tasks, output_yaml_file)}
   end
 end
 
