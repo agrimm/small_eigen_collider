@@ -1,0 +1,54 @@
+Small Eigen Collider produces random ruby programs in order to compare the results under different ruby implementations.
+
+Random ruby programs are created by starting off with a set of objects and a set of method names. A receiver is selected at random from the set of objects, and then a method name is randomly selected, then a random number of random parameter objects. A block is also included in case the method chosen requires one.
+
+Once everything is chosen, the code
+
+result receiver_object.send(method, *parameter_objects, &block)
+
+is run, and the inputs and the results are logged.
+
+To compare different ruby implementations, run Small Eigen Collider under those implementations and look at the differences.
+
+== DISCLAIMER:
+
+Random ruby programs are produced. Some of these programs may harm your computer, either by affecting performance or by deleting data.
+
+== REQUIREMENTS:
+
+* None.
+
+== INSTALL:
+
+* Currently not a gem
+
+== USAGE:
+
+bin/small_eigen_collider
+
+== CONTACT:
+
+* Github: agrimm
+* Twitter: @andrewjgrimm
+
+== LICENSE:
+
+(The MIT License)
+
+Copyright (c) 2010 Andrew Grimm.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+'Software'), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
