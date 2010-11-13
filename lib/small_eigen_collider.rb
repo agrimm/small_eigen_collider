@@ -23,8 +23,12 @@ module SmallEigenCollider
 end
 
 class SmallEigenCollider::Logger
-  def self.new_using_filename(filename)
-    filestream = File.open(filename, "w")
+  def self.new_using_filename_or_filestream(filename_or_filestream)
+    if filename_or_filestream.respond_to?("gets")
+      filestream = filename_or_filestream
+    else
+      filestream = File.open(filename_or_filestream, "w")
+    end
     new(filestream)
   end
 
@@ -109,17 +113,22 @@ class SmallEigenCollider::TaskList
   end
 
   def self.new_using_yaml(yaml_filename)
-    tasks = YAML.load_file(yaml_filename)
-    tasks.each {|task| task.reinitialize}
+    tasks = load_tasks(File.read(yaml_filename))
     new(tasks)
+  end
+
+  def self.load_tasks(yaml_string)
+    tasks = YAML.load(yaml_string)
+    tasks.each {|task| task.reinitialize}
+    tasks
   end
 
   def initialize(tasks)
     @tasks = tasks
   end
 
-  def run_and_log_each_task(logger_filename)
-    logger = SmallEigenCollider::Logger.new_using_filename(logger_filename)
+  def run_and_log_each_task(logger_filename_or_filestream)
+    logger = SmallEigenCollider::Logger.new_using_filename_or_filestream(logger_filename_or_filestream)
     @tasks.each_with_index do |task, i|
       # FIXME rather than using Object#inspect, I have to create a method whose output doesn't vary depending on object id
       # or ruby implementation
@@ -135,7 +144,11 @@ class SmallEigenCollider::TaskList
   end
 
   def dump_tasks_to_yaml(yaml_filename)
-    File.open(yaml_filename, "w") {|output_yaml_file| YAML.dump(@tasks, output_yaml_file)}
+    File.open(yaml_filename, "w") {|output_yaml_file| output_yaml_file.print(dump_tasks_to_yaml_string)}
+  end
+
+  def dump_tasks_to_yaml_string
+    YAML.dump(@tasks)
   end
 end
 

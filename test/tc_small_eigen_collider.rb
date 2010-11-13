@@ -23,14 +23,25 @@ class TestProgramWorks < Test::Unit::TestCase
 end
 
 class TestRoundtripping < Test::Unit::TestCase
+  def assert_roundtrips(receiver_object, method_name, parameters, yaml_dump_filename)
+    File.delete(yaml_dump_filename) if File.exist?(yaml_dump_filename)
+
+    first_mock_filestream = StringIO.new
+    task = SmallEigenCollider::Task.new(receiver_object, method_name, parameters)
+    task_list = SmallEigenCollider::TaskList.new([task])
+    task_list.run_and_log_each_task(first_mock_filestream)
+    yaml_string = task_list.dump_tasks_to_yaml_string
+    task_list.dump_tasks_to_yaml(yaml_dump_filename)
+
+    second_mock_filestream = StringIO.new
+    yaml_created_task_list = SmallEigenCollider::TaskList.new_using_yaml(yaml_dump_filename)
+    yaml_created_task_list.run_and_log_each_task(second_mock_filestream)
+    second_yaml_string = yaml_created_task_list.dump_tasks_to_yaml_string
+    assert_equal yaml_string, second_yaml_string, "Side effect problems"
+    assert_equal first_mock_filestream.string, second_mock_filestream.string, "Side effect problems"
+  end
+
   def test_roundtripping_works
-    side_effective_task = SmallEigenCollider::Task.new("a", "<<", "b")
-    side_effective_task.run
-    first_yaml = YAML.dump(side_effective_task)
-    yaml_created_task = YAML.load(first_yaml)
-    yaml_created_task.reinitialize
-    yaml_created_task.run
-    second_yaml = YAML.dump(yaml_created_task)
-    assert_equal first_yaml, second_yaml, "Side effects seem to be preventing a certain yaml being converted into an object that creates the same yaml"
+    assert_roundtrips("a", "<<", "b", "test/data/simple_roundtrip.yml")
   end
 end
