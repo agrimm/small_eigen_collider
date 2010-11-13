@@ -44,4 +44,9 @@ class TestRoundtripping < Test::Unit::TestCase
   def test_roundtripping_works
     assert_roundtrips("a", "<<", "b", "test/data/simple_roundtrip.yml")
   end
+
+  # tag_uri doesn't roundtrip. This test just demonstrates that I can't do this using test/unit yet. See test/failing_test.rb for the real story.
+  def test_taguri_roundtrips
+    assert_roundtrips(" affectin", "taguri=", ["metho"], "test/data/taguri_roundtrip.yml")
+  end
 end
