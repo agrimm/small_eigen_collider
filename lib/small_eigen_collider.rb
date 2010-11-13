@@ -32,8 +32,8 @@ class SmallEigenCollider::Logger
     @filestream = filestream
   end
 
-  def log_start
-    @filestream.puts "Start"
+  def log_start(task_number)
+    @filestream.puts "Start of task #{task_number}"
   end
 
   def log_input_parameters(task)
@@ -120,11 +120,12 @@ class SmallEigenCollider::TaskList
 
   def run_and_log_each_task(logger_filename)
     logger = SmallEigenCollider::Logger.new_using_filename(logger_filename)
-    @tasks.each do |task|
+    @tasks.each_with_index do |task, i|
       # FIXME rather than using Object#inspect, I have to create a method whose output doesn't vary depending on object id
       # or ruby implementation
 
-      logger.log_start
+      task_number = i + 1
+      logger.log_start(task_number)
       logger.log_input_parameters(task)
       task.run
       task.log_result(logger)
