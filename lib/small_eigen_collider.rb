@@ -1,5 +1,6 @@
 require "timeout"
 require "yaml"
+require "forwardable"
 
 # FIXME intended structure: 
 # # A class that generates a variety of receivers, methods, parameters and blocks
@@ -22,6 +23,8 @@ end
 module SmallEigenCollider
 end
 
+# FIXME rather than using Object#inspect, I have to create a method whose output doesn't vary depending on object id
+# or ruby implementation
 class SmallEigenCollider::Logger
   def self.new_using_filename_or_filestream(filename_or_filestream)
     if filename_or_filestream.respond_to?("gets")
@@ -108,6 +111,10 @@ class SmallEigenCollider::TaskCreator
 end
 
 class SmallEigenCollider::TaskList
+  extend Forwardable
+  # empty? is just used for testing. Don't know whether it should be based on :@tasks or filtered_tasks
+  def_delegators :@tasks, :empty?
+
   def self.new_using_creator(iterations)
     task_creator = SmallEigenCollider::TaskCreator.new
     tasks = iterations.times.map {task_creator.create_task}
@@ -119,6 +126,12 @@ class SmallEigenCollider::TaskList
     new(tasks)
   end
 
+  # Only used in testing
+  def self.new_using_yaml_string(yaml_string)
+    tasks = load_tasks(yaml_string)
+    new(tasks)
+  end
+
   def self.load_tasks(yaml_string)
     tasks = YAML.load(yaml_string)
     tasks.each {|task| task.reinitialize}
@@ -127,20 +140,42 @@ class SmallEigenCollider::TaskList
 
   def initialize(tasks)
     @tasks = tasks
+    @filters = []
+  end
+
+  def add_filter(type)
+    @filters << type
+  end
+
+  def passes_filters?(task)
+    @filters.all? do |filter|
+      case filter
+      when :success_only
+        task.success?
+      else raise "Unknown filter type"
+      end
+    end
+  end
+
+  def filtered_tasks
+    @tasks.find_all{|task| passes_filters?(task)}
   end
 
   def run_and_log_each_task(logger_filename_or_filestream)
     logger = SmallEigenCollider::Logger.new_using_filename_or_filestream(logger_filename_or_filestream)
-    @tasks.each_with_index do |task, i|
-      # FIXME rather than using Object#inspect, I have to create a method whose output doesn't vary depending on object id
-      # or ruby implementation
+    task_number = 1
+    # Imperitive code written because otherwise no previous tasks would be printed if it gets printed
+    @tasks.each do |task|
+      # Fixme if this triggers a fatal error, you can't see what triggered it
+      task.run
 
-      task_number = i + 1
+      next unless passes_filters?(task)
       logger.log_start(task_number)
       logger.log_input_parameters(task)
-      task.run
       task.log_result(logger)
       logger.log_end
+
+      task_number += 1
     end
     logger.close
   end
@@ -150,7 +185,7 @@ class SmallEigenCollider::TaskList
   end
 
   def dump_tasks_to_yaml_string
-    YAML.dump(@tasks)
+    YAML.dump(filtered_tasks)
   end
 end
 

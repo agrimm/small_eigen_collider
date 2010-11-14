@@ -50,3 +50,38 @@ class TestRoundtripping < Test::Unit::TestCase
     assert_roundtrips(" affectin", "taguri=", ["metho"], "test/data/taguri_roundtrip.yml")
   end
 end
+
+class TestFilter < Test::Unit::TestCase
+  def create_single_item_task_list(receiver_object, method_name, parameters)
+    raise ArgumentError unless parameters.is_a? Array
+    task = SmallEigenCollider::Task.new(receiver_object, method_name, parameters)
+    task_list = SmallEigenCollider::TaskList.new([task])
+    task_list
+  end
+
+  def task_list_output_empty?(task_list)
+    log_output_filestream = StringIO.new
+    task_list.run_and_log_each_task(log_output_filestream)
+    log_output_filestream.string.empty?
+  end
+
+  def task_yaml_output_empty?(task_list)
+    task_list_yaml = task_list.dump_tasks_to_yaml_string
+    yaml_created_task_list = SmallEigenCollider::TaskList.new_using_yaml_string(task_list_yaml)
+    yaml_created_task_list.empty?
+  end
+
+  def test_filter
+    bogus_task_task_list = create_single_item_task_list(1, "+", ["a"])
+    bogus_task_task_list.add_filter(:success_only)
+    assert_equal true, task_list_output_empty?(bogus_task_task_list), "Can't filter tasks"
+    assert_equal true, task_yaml_output_empty?(bogus_task_task_list), "Can't filter tasks"
+  end
+
+  def test_filter_only_when_unsuccessful
+    legit_task_task_list = create_single_item_task_list(1, "+", [1])
+    legit_task_task_list.add_filter(:success_only)
+    assert_equal false, task_list_output_empty?(legit_task_task_list), "Filters legit tasks"
+    assert_equal false, task_yaml_output_empty?(legit_task_task_list), "Filters legit tasks"
+  end
+end
