@@ -60,6 +60,7 @@ class SmallEigenCollider::Logger
   def log_end
     @filestream.puts "End"
     @filestream.puts
+    @filestream.flush
   end
 
   def close
