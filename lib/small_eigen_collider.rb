@@ -212,14 +212,14 @@ class SmallEigenCollider::Task
   def run
     begin
       Timeout.timeout(2) do
-        secure_thread = Thread.new do
+        # secure_thread = Thread.new do
           # $SAFE doesn't help in all implementations of ruby
-          $SAFE = 2
+          # $SAFE = 2
           # FIXME add a random block
           @result = @receiver_object.send(@method, *@parameter_objects, &:consistent_inspect)
           @status = :success
-        end
-        secure_thread.join
+        # end
+        # secure_thread.join
       end
     rescue SecurityError
       @status = :security_error

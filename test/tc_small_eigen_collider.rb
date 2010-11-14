@@ -4,13 +4,13 @@ require "test/unit"
 
 class TestSecurity < Test::Unit::TestCase
 
-  # This fails under JRuby, for any level of $SAFE
-  # This fails under Rubinius, for any level of $SAFE
-  # This probably fails under other platforms as well
-  def test_deletion_security
+  # Detection of security breaches would fail under JRuby, for any level of $SAFE
+  # and under Rubinius, for any level of $SAFE
+  # and it probably fails under other platforms as well
+  def test_lack_of_deletion_security
     deletion_task = SmallEigenCollider::Task.new(File, :delete, "nosuchfile.txt")
     deletion_task.run
-    assert deletion_task.security_error?, "#{deletion_task.inspect} attempts to delete a file"
+    assert_equal false, deletion_task.security_error?, "#{deletion_task.inspect} is checking for insecure operations"
   end
 end
 

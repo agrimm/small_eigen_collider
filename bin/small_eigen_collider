@@ -1,6 +1,8 @@
 $:.unshift File.join(File.dirname(__FILE__), "..", "lib")
 require "small_eigen_collider"
 
+$VERBOSE = nil
+
 yaml_filename = "tasks.yml"
 
 def determine_output_filename
