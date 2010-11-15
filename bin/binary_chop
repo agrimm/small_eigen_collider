@@ -1,0 +1,28 @@
+$:.unshift File.join(File.dirname(__FILE__), "..", "lib")
+
+require "yaml"
+require "array_chopper"
+
+#raise "tasks.yml exists - this file would be overwritten" if File.exist?("tasks.yml")
+raise "known_bad.yml doesn't exist - this file is required to indicate what should crash the ruby" unless File.exist?("known_bad.yml")
+
+if __FILE__ == $0
+  system("cp known_bad.yml current_bad.yml") unless File.exist?("current_bad.yml")
+  bad_array = YAML.load_file("current_bad.yml")
+  if File.exist?("current_good.yml")
+    good_array = YAML.load_file("current_good.yml")
+  else
+    good_array = []
+  end
+
+
+  array_test = Proc.new do |array|
+    STDERR.puts "Array size is #{array.size}"
+    sleep 5
+    File.open("tasks.yml") {|f| YAML.dump(array, f)}
+    result = system("bin/small_eigen_collider")
+    STDERR.puts "Result for array size of #{array.size} was #{result.inspect}"
+    result
+  end
+end  
+  
