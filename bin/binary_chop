@@ -3,26 +3,21 @@ $:.unshift File.join(File.dirname(__FILE__), "..", "lib")
 require "yaml"
 require "array_chopper"
 
-#raise "tasks.yml exists - this file would be overwritten" if File.exist?("tasks.yml")
 raise "known_bad.yml doesn't exist - this file is required to indicate what should crash the ruby" unless File.exist?("known_bad.yml")
 
 if __FILE__ == $0
-  system("cp known_bad.yml current_bad.yml") unless File.exist?("current_bad.yml")
-  bad_array = YAML.load_file("current_bad.yml")
-  if File.exist?("current_good.yml")
-    good_array = YAML.load_file("current_good.yml")
-  else
-    good_array = []
-  end
-
+  bad_array = YAML.load_file("known_bad.yml")
 
   array_test = Proc.new do |array|
     STDERR.puts "Array size is #{array.size}"
-    sleep 5
-    File.open("tasks.yml") {|f| YAML.dump(array, f)}
-    result = system("bin/small_eigen_collider")
+    sleep 1
+    File.open("tasks.yml", "w") {|f| YAML.dump(array, f)}
+    result = system("ruby bin/small_eigen_collider")
     STDERR.puts "Result for array size of #{array.size} was #{result.inspect}"
     result
   end
-end  
-  
+
+  array_chopper = ArrayChopper.new(bad_array, array_test)
+  array_chopper.run
+  File.open("minimal_failure.yml", "w") {|f| YAML.dump(array_chopper.minimal_failure, f)}
+end
