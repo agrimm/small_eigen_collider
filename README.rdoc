@@ -14,6 +14,8 @@ To compare different ruby implementations, run Small Eigen Collider under those 
 
 Random ruby programs are produced. Some of these programs may harm your computer, either by affecting performance or by deleting data.
 
+If you can understand this, put a file called "i_understand_the_risks.txt" in the directory you're running this from.
+
 == REQUIREMENTS:
 
 * None.
