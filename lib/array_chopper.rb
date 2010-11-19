@@ -15,7 +15,7 @@ class ArrayChopper
 
   def find_minimal_and_maximal_given(known_failure, known_success)
     return known_failure, known_success if known_failure.length - 1 == known_success.length
-    raise "success for known failure #{known_failure.inspect}" if @array_test.call(known_failure)
+    raise "success for known failure" if @array_test.call(known_failure)
     raise "failure for known success #{known_success.inspect}" unless @array_test.call(known_success)
     # Very naive algorithm
     medium = find_medium_between(known_failure, known_success)
