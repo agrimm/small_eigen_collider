@@ -49,6 +49,10 @@ class TestRoundtripping < Test::Unit::TestCase
   def test_taguri_roundtrips
     assert_roundtrips(" affectin", "taguri=", ["metho"], "test/data/taguri_roundtrip.yml")
   end
+
+  def test_class_roundtrips
+    assert_roundtrips(File, "read", ["README.rdoc", 10], "test/data/file_roundtrip.yml")
+  end
 end
 
 class TestFilter < Test::Unit::TestCase

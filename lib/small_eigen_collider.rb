@@ -2,6 +2,10 @@ require "timeout"
 require "yaml"
 require "forwardable"
 
+$:.unshift File.join(File.dirname(__FILE__), "small_eigen_collider")
+
+require "serialization"
+
 # FIXME intended structure: 
 # # A class that generates a variety of receivers, methods, parameters and blocks
 # # A class representing a single action
@@ -83,6 +87,9 @@ class SmallEigenCollider::TaskCreator
       @objects << rand(10)
     end
     @objects << " "
+    100.times do
+      @objects << File
+    end
 
     # FIXME add handling of problem methods now that we don't use a whitelist.
     # taguri= is inconsistent between the initial run and from yaml. Not sure why, seems to be a fairly difficult task.

@@ -1,0 +1,14 @@
+--- 
+- !ruby/object:SmallEigenCollider::Task 
+  method: read
+  original_method: read
+  original_parameter_objects: 
+  - README.rdoc
+  - 10
+  original_receiver_object: !ruby/class File
+  parameter_objects: 
+  - README.rdoc
+  - 10
+  receiver_object: !ruby/class 
+  result: Small Eige
+  status: :success

@@ -1,6 +1,7 @@
-$:.unshift File.join(File.dirname(__FILE__), "..", "lib")
+$:.unshift File.join(File.dirname(__FILE__), "..", "lib", "small_eigen_collider")
 
 require "yaml"
+require "serialization"
 require "array_chopper"
 
 raise "known_bad.yml doesn't exist - this file is required to indicate what should crash the ruby" unless File.exist?("known_bad.yml")

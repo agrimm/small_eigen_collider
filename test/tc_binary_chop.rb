@@ -1,4 +1,4 @@
-$:.unshift File.join(File.dirname(__FILE__), "..", "lib")
+$:.unshift File.join(File.dirname(__FILE__), "..", "lib", "small_eigen_collider")
 require "test/unit"
 require "array_chopper"
 
