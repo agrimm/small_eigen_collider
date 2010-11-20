@@ -90,10 +90,6 @@ class SmallEigenCollider::TaskCreator
     100.times do
       @objects << File
     end
-
-    # FIXME add handling of problem methods now that we don't use a whitelist.
-    # taguri= is inconsistent between the initial run and from yaml. Not sure why, seems to be a fairly difficult task.
-    # problem_methods = ["taguri="]
   end
 
   def create_task
@@ -220,6 +216,12 @@ class SmallEigenCollider::Task
   def run
     begin
       Timeout.timeout(2) do
+        # taguri= is inconsistent between the initial run and from yaml. Not sure why, seems to be a fairly difficult task.
+        # unpack crashes older versions of ruby 1.9.2
+        # raise rather than run problem methods
+        problem_methods = ["taguri=", "unpack"]
+        raise if problem_methods.include?(method.to_s)
+
         # secure_thread = Thread.new do
           # $SAFE doesn't help in all implementations of ruby
           # $SAFE = 2
