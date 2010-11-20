@@ -5,7 +5,7 @@ require "array_chopper"
 class TestBinaryChop < Test::Unit::TestCase
   def do_binary_chop(original_array, array_test)
     current_minimal_failure = Array(original_array)
-    5.times do
+    100.times do
       array_chopper = ArrayChopper.new(current_minimal_failure, array_test)
       array_chopper.run
       current_minimal_failure = array_chopper.minimal_failure
