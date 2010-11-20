@@ -84,11 +84,9 @@ class SmallEigenCollider::TaskCreator
     end
     @objects << " "
 
+    # FIXME add handling of problem methods now that we don't use a whitelist.
     # taguri= is inconsistent between the initial run and from yaml. Not sure why, seems to be a fairly difficult task.
-    problem_methods = ["taguri="]
-    # FIXME replace this whitelist of non-risky (I hope!) methods with something more flexible.
-    # I can get the list of methods using reflection, but how do I ensure that any operations won't delete the root directory?
-    @methods = (["insert", "include?", "gsub", "size", "replace", "to_i", "chomp!", "succ", "oct", "to_s", "rstrip", "taguri=", "lines", "capitalize!", "hash", "capitalize", "center", "*", "index", "crypt", "+", "=~", "strip", "each_byte", "gsub!", "count", "delete!", "upcase", "ljust", "delete", "is_binary_data?", "upcase!", "rstrip!", "sum", "eql?", "start_with?", "to_sym", "length", "chop", "to_yaml", "to_f", "tr!", "to_str", "[]", "unpack", "tr", "inspect", "bytes", "strip!", "[]=", "slice!", "split", "sub", "each", "empty?", "swapcase!", "<<", "casecmp", "swapcase", "rindex", "intern", "rpartition", "reverse!", "next!", "lstrip", "hex", "chop!", "match", "each_char", "downcase!", "rjust", "downcase", "squeeze", "squeeze!", "concat", "upto", "end_with?", "slice", "chomp", "<=>", "bytesize", "sub!", "succ!", "each_line", "dump", "==", "scan", "tr_s", "tr_s!", "partition", "is_complex_yaml?", "next", "%", "reverse", "lstrip!", "chars", "taguri"] + ["%", "odd?", "prec_i", "<<", "div", "&", ">>", "lcm", "power!", "to_sym", "*", "ord", "+", "next", "round", "prec_f", "-", "even?", "denominator", "singleton_method_added", "divmod", "/", "integer?", "downto", "gcdlcm", "|", "gcd", "size", "truncate", "~", "to_i", "modulo", "zero?", "times", "to_r", "rdiv", "^", "+@", "-@", "quo", "**", "upto", "to_f", "<", "step", "numerator", "<=>", "between?", "remainder", ">", "to_int", "nonzero?", "pred", "coerce", "rpower", "floor", "succ", ">=", "prec", "<=", "fdiv", "abs", "chr", "id2name", "ceil", "[]"]).uniq - problem_methods
+    # problem_methods = ["taguri="]
   end
 
   def create_task
@@ -101,10 +99,12 @@ class SmallEigenCollider::TaskCreator
       next if parameters_indexes.include?(index)
       parameters_indexes << index
     end
-    method = @methods[rand(@methods.size)]
 
     receiver_object = @objects[receiver_object_index]
     parameter_objects = @objects.values_at(*parameters_indexes)
+
+    receiver_object_methods = receiver_object.methods
+    method = receiver_object_methods[rand(receiver_object_methods.size)]
 
     task = SmallEigenCollider::Task.new(receiver_object, method, parameter_objects)
     task
