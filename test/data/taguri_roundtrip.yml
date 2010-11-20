@@ -7,8 +7,5 @@
   original_receiver_object: " affectin"
   parameter_objects: 
   - metho
-  receiver_object: 
-    str: " affectin"
-    "@taguri": metho
-  result: metho
-  status: :success
+  receiver_object: " affectin"
+  status: :failure
