@@ -9,6 +9,6 @@
   parameter_objects: 
   - README.rdoc
   - 10
-  receiver_object: !ruby/class 
+  receiver_object: !ruby/class File
   result: Small Eige
   status: :success
