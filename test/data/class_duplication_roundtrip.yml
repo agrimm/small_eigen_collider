@@ -1,0 +1,11 @@
+--- 
+- !ruby/object:SmallEigenCollider::Task 
+  method: dup
+  original_method: dup
+  original_parameter_objects: []
+
+  original_receiver_object: !ruby/class File
+  parameter_objects: []
+
+  receiver_object: !ruby/class File
+  status: :failure

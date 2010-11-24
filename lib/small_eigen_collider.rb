@@ -222,14 +222,22 @@ class SmallEigenCollider::Task
         problem_methods = ["taguri=", "unpack"]
         raise if problem_methods.include?(method.to_s)
 
-        # Hack to avoid creating anonymous classes, which my code currently doesn't serialize
+        # Hack to avoid creating anonymous classes, which is tested for later on anyway.
+        # This line is only required for some versions of ruby 1.9 (eg 1.9.2-p0) where it
+        # prevents ruby from crashing
         raise if @receiver_object == Class and method.to_s == "new"
 
         # secure_thread = Thread.new do
           # $SAFE doesn't help in all implementations of ruby
           # $SAFE = 2
           # FIXME add a random block
-          @result = @receiver_object.send(@method, *@parameter_objects, &:consistent_inspect)
+          result = @receiver_object.send(@method, *@parameter_objects, &:consistent_inspect)
+
+          # Ensure that anonymous classes aren't created. They currently can't be
+          # serialized
+          raise "Anonymous class created" if result.class == Class and (result.name.nil? or result.name.empty?)
+
+          @result = result
           @status = :success
         # end
         # secure_thread.join

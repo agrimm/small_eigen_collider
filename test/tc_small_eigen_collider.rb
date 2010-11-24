@@ -58,6 +58,11 @@ class TestRoundtripping < Test::Unit::TestCase
     # FIXME it falsely claims it fails, but at least it doesn't cause problems for YAML for now
     assert_roundtrips(Class, "new", [], "test/data/anonymous_class_roundtrip.yml")
   end
+
+  def test_class_duplication_doesnt_cause_crashing
+    # FIXME it falsely claims it fails
+    assert_roundtrips(File, "dup", [], "test/data/class_duplication_roundtrip.yml")
+  end
 end
 
 class TestFilter < Test::Unit::TestCase
