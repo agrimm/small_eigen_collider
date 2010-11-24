@@ -53,6 +53,11 @@ class TestRoundtripping < Test::Unit::TestCase
   def test_class_roundtrips
     assert_roundtrips(File, "read", ["README.rdoc", 10], "test/data/file_roundtrip.yml")
   end
+
+  def test_anonymous_class_roundtrips
+    # FIXME it falsely claims it fails, but at least it doesn't cause problems for YAML for now
+    assert_roundtrips(Class, "new", [], "test/data/anonymous_class_roundtrip.yml")
+  end
 end
 
 class TestFilter < Test::Unit::TestCase

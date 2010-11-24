@@ -222,6 +222,9 @@ class SmallEigenCollider::Task
         problem_methods = ["taguri=", "unpack"]
         raise if problem_methods.include?(method.to_s)
 
+        # Hack to avoid creating anonymous classes, which my code currently doesn't serialize
+        raise if @receiver_object == Class and method.to_s == "new"
+
         # secure_thread = Thread.new do
           # $SAFE doesn't help in all implementations of ruby
           # $SAFE = 2
