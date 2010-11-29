@@ -231,13 +231,7 @@ class SmallEigenCollider::Task
           # $SAFE doesn't help in all implementations of ruby
           # $SAFE = 2
           # FIXME add a random block
-          result = @receiver_object.send(@method, *@parameter_objects, &:consistent_inspect)
-
-          # Ensure that anonymous classes aren't created. They currently can't be
-          # serialized
-          raise "Anonymous class created" if result.class == Class and (result.name.nil? or result.name.empty?)
-
-          @result = result
+          @result = @receiver_object.send(@method, *@parameter_objects, &:consistent_inspect)
           @status = :success
         # end
         # secure_thread.join
@@ -279,5 +273,10 @@ class SmallEigenCollider::Task
 
   def parameter_objects
     @original_parameter_objects
+  end
+
+  def to_yaml_properties
+    hard_to_marshal_properties = %{@result}
+    super.reject {|yaml_property| hard_to_marshal_properties.include?(yaml_property.to_s)}
   end
 end

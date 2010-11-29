@@ -6,5 +6,4 @@
   original_receiver_object: a
   parameter_objects: b
   receiver_object: ab
-  result: ab
   status: :success
