@@ -156,6 +156,9 @@ class SmallEigenCollider::TaskList
       case filter
       when :success_only
         task.success?
+      when :implementation_dependent
+        next false if ["hash"].include?(task.method.to_s)
+        true
       else raise "Unknown filter type"
       end
     end

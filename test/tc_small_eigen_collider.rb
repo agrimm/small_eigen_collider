@@ -98,4 +98,10 @@ class TestFilter < Test::Unit::TestCase
     assert_equal false, task_list_output_empty?(legit_task_task_list), "Filters legit tasks"
     assert_equal false, task_yaml_output_empty?(legit_task_task_list), "Filters legit tasks"
   end
+
+  def test_filter_implementation_dependent
+    implementation_dependent_task_task_list = create_single_item_task_list(42, "hash", [])
+    implementation_dependent_task_task_list.add_filter(:implementation_dependent)
+    assert_equal true, task_list_output_empty?(implementation_dependent_task_task_list), "Fails to filter implementation dependent tasks"
+  end
 end
