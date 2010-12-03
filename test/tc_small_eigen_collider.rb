@@ -86,6 +86,15 @@ class TestRoundtripping < Test::Unit::TestCase
   def test_class_duplication_doesnt_cause_crashing
     assert_roundtrips(File, "dup", [], "test/data/class_duplication_roundtrip.yml")
   end
+
+  def test_uninspectable_objects_dont_cause_crashing
+    buster = Object.new
+    def buster.inspect() raise "This inspect is busted!" end
+    task_list = create_single_item_task_list(buster, "class", [])
+    assert_nothing_raised do
+      task_list.run_and_log_each_task(StringIO.new)
+    end
+  end
 end
 
 class TestFilter < Test::Unit::TestCase

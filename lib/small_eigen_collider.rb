@@ -27,8 +27,6 @@ end
 module SmallEigenCollider
 end
 
-# FIXME rather than using Object#inspect, I have to create a method whose output doesn't vary depending on object id
-# or ruby implementation
 class SmallEigenCollider::Logger
   def self.new_using_filename_or_filestream(filename_or_filestream)
     if filename_or_filestream.respond_to?("gets")
@@ -48,17 +46,17 @@ class SmallEigenCollider::Logger
   end
 
   def log_input_parameters(task)
-    @filestream.puts "Receiver object: " + task.receiver_object.inspect
-    @filestream.puts "Method: " + task.method.inspect
-    @filestream.puts "Parameters: " + task.parameter_objects.inspect
+    @filestream.puts "Receiver object: " + consistent_inspect(task.receiver_object)
+    @filestream.puts "Method: " + consistent_inspect(task.method)
+    @filestream.puts "Parameters: " + consistent_inspect(task.parameter_objects)
   end
 
   def log_result(result)
-    @filestream.puts "Result: " + result.consistent_inspect
+    @filestream.puts "Result: " + consistent_inspect(result)
   end
 
   def log_failure(receiver_object, method, parameter_objects)
-    @filestream.puts "Failure for #{[receiver_object, method, parameter_objects].inspect}"
+    @filestream.puts "Failure for #{consistent_inspect([receiver_object, method, parameter_objects].map{|x| consistent_inspect(x)})}"
   end
 
   def log_end
@@ -69,6 +67,14 @@ class SmallEigenCollider::Logger
 
   def close
     @filestream.close
+  end
+
+  def consistent_inspect(object)
+    begin
+      object.consistent_inspect
+    rescue
+      "Uninspectable object"
+    end
   end
 end
 
