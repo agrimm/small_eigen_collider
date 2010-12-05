@@ -228,7 +228,7 @@ class SmallEigenCollider::Task
         # taguri= is inconsistent between the initial run and from yaml. Not sure why, seems to be a fairly difficult task.
         # unpack crashes older versions of ruby 1.9.2
         # raise rather than run problem methods
-        problem_methods = ["taguri=", "unpack"]
+        problem_methods = ["taguri=", "unpack", "instance_exec", "instance_eval"]
         raise if problem_methods.include?(method.to_s)
 
         # Hack to avoid creating anonymous classes, which is tested for later on anyway.
