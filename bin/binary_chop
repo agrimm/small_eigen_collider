@@ -7,7 +7,8 @@ require "array_chopper"
 raise "known_bad.yml doesn't exist - this file is required to indicate what should crash the ruby" unless File.exist?("known_bad.yml")
 
 if __FILE__ == $0
-  bad_array = YAML.load_file("known_bad.yml")
+  original_bad_array = YAML.load_file("known_bad.yml")
+  current_bad_array = original_bad_array
 
   array_test = Proc.new do |array|
     STDERR.puts "Array size is #{array.size}"
@@ -18,7 +19,11 @@ if __FILE__ == $0
     result
   end
 
-  array_chopper = ArrayChopper.new(bad_array, array_test)
-  array_chopper.run
-  File.open("minimal_failure.yml", "w") {|f| YAML.dump(array_chopper.minimal_failure, f)}
+  10.times do
+    break if current_bad_array.size == 1
+    array_chopper = ArrayChopper.new(current_bad_array, array_test)
+    array_chopper.run
+    current_bad_array = array_chopper.minimal_failure
+  end
+  File.open("minimal_failure.yml", "w") {|f| YAML.dump(current_bad_array, f)}
 end
