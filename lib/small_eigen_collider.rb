@@ -229,8 +229,10 @@ class SmallEigenCollider::Task
         # unpack crashes older versions of ruby 1.9.2
         # raise rather than run problem methods
         problem_methods = ["taguri=", "unpack", "instance_exec", "instance_eval"]
-        raise if problem_methods.include?(method.to_s)
+        raise if problem_methods.include?(@method.to_s)
 
+        # In JRuby, File.open(4) seems to make errors raise when flushing the log file
+        raise if @receiver_object == File and "open" == @method.to_s and Fixnum === @parameter_objects.first
         # Hack to avoid creating anonymous classes, which is tested for later on anyway.
         # This line is only required for some versions of ruby 1.9 (eg 1.9.2-p0) where it
         # prevents ruby from crashing
