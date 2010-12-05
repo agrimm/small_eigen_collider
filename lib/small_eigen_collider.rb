@@ -163,7 +163,7 @@ class SmallEigenCollider::TaskList
       when :success_only
         task.success?
       when :implementation_dependent
-        next false if ["hash", "public_instance_methods", "singleton_methods", "private_methods", "methods", "public_methods"].include?(task.method.to_s)
+        next false if ["hash", "__id__", "object_id", "constants", "public_instance_methods", "singleton_methods", "private_methods", "methods", "public_methods", "instance_methods", "private_instance_methods"].include?(task.method.to_s)
         true
       else raise "Unknown filter type"
       end
