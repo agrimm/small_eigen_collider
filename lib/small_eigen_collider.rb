@@ -237,6 +237,8 @@ class SmallEigenCollider::Task
         # This line is only required for some versions of ruby 1.9 (eg 1.9.2-p0) where it
         # prevents ruby from crashing
         raise if @receiver_object == Class and method.to_s == "new"
+        # Turning making GC.stress = true makes it *slow*. Don't do that!
+        raise if @receiver_object == GC and method.to_s == "stress="
 
         # secure_thread = Thread.new do
           # $SAFE doesn't help in all implementations of ruby
