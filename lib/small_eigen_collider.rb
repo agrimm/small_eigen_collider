@@ -216,7 +216,7 @@ class SmallEigenCollider::Task
 
   def safe_dup(object)
     case object
-    when Fixnum, Symbol, NilClass, TrueClass, FalseClass, Class then return object
+    when Fixnum, Symbol, NilClass, TrueClass, FalseClass, Class, Module then return object
     when Array then return object.map{|element| safe_dup(element)}
     else return object.dup
     end

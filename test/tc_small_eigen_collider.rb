@@ -87,6 +87,10 @@ class TestRoundtripping < Test::Unit::TestCase
     assert_roundtrips(File, "dup", [], "test/data/class_duplication_roundtrip.yml")
   end
 
+  def test_module_duplication_doesnt_cause_crashing
+    assert_roundtrips(Kernel, "Float", [5], "test/data/module_roundtrip.yml")
+  end
+
   def test_uninspectable_objects_dont_cause_crashing
     buster = Object.new
     def buster.inspect() raise "This inspect is busted!" end

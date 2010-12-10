@@ -1,0 +1,11 @@
+--- 
+- !ruby/object:SmallEigenCollider::Task 
+  method: Float
+  original_method: Float
+  original_parameter_objects: 
+  - 5
+  original_receiver_object: !ruby/module Kernel
+  parameter_objects: 
+  - 5
+  receiver_object: !ruby/module Kernel
+  status: :success
