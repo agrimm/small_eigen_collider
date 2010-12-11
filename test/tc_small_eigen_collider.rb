@@ -99,6 +99,13 @@ class TestRoundtripping < Test::Unit::TestCase
       task_list.run_and_log_each_task(StringIO.new)
     end
   end
+
+  def test_object_uninspectable_by_jruby_dont_cause_crashing
+    task_list = create_single_item_task_list(Dir, "allocate", [])
+    assert_nothing_raised("Can't handle java exceptions while inspecting") do
+      task_list.run_and_log_each_task(StringIO.new)
+    end
+  end
 end
 
 class TestFilter < Test::Unit::TestCase

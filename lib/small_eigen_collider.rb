@@ -72,7 +72,9 @@ class SmallEigenCollider::Logger
   def consistent_inspect(object)
     begin
       object.consistent_inspect
-    rescue
+    rescue # Unless things have really gone badly, they should be rescued here
+      "Uninspectable object"
+    rescue Java::JavaLang::NullPointerException
       "Uninspectable object"
     end
   end
