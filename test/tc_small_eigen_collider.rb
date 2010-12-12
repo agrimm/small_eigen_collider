@@ -18,9 +18,7 @@ module TestSmallEigenColliderHelper
     yaml_created_task_list.run_and_log_each_task(second_mock_filestream)
     second_yaml_string = yaml_created_task_list.dump_tasks_to_yaml_string
     assert_equal yaml_string, second_yaml_string, "Side effect problems"
-    # FIXME gsubs are to avoid irrelevant details from producing false claims of difference.
-    # The optional 1 before the x is to handle JRuby - see JRuby bug 4977
-    assert_equal first_mock_filestream.string.gsub(/01?x[0-9abcdef]+/, "0xc0ffee"), second_mock_filestream.string.gsub(/01?x[0-9abcdef]+/, "0xc0ffee"), "Side effect problems"
+    assert_equal first_mock_filestream.string, second_mock_filestream.string, "Side effect problems"
   end
 
   def create_single_item_task_list(receiver_object, method_name, parameters)

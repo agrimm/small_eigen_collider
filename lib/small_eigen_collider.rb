@@ -14,7 +14,9 @@ require "serialization"
 
 class Object
   def consistent_inspect
-    inspect
+    # The gsub is to deal with the object id portion of #<Object:0x12345678> being different each time
+    # The optional 1 before the x is to handle JRuby - see JRuby bug 4977
+    inspect.gsub(/01?x[0-9abcdef]+/, "0xc0ffee")
   end
 end
 
