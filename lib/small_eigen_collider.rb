@@ -102,7 +102,8 @@ class SmallEigenCollider::TaskCreator
     end
     non_small_eigen_collider_constant_names = Module.constants.reject{|con| con.to_s =~ /Small/}
     possible_constants = non_small_eigen_collider_constant_names.map{|con| Kernel.const_get(con)}
-    non_problematic_constants = (possible_constants - [Binding]).reject{|con| con.class == Binding}
+    # FIXME see if some constants that I'm currently rejecting can't be allowed in future versions
+    non_problematic_constants = (possible_constants - [Binding, STDERR]).reject{|con| con.class != Class}
     @objects += non_problematic_constants
   end
 
