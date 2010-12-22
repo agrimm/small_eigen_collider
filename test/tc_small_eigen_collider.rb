@@ -129,3 +129,16 @@ class TestFilter < Test::Unit::TestCase
     assert_equal true, task_list_output_empty?(implementation_dependent_task_task_list), "Fails to filter implementation dependent tasks"
   end
 end
+
+class TestObjectGeneration < Test::Unit::TestCase
+  module NAMESPACED_CONSTANT
+  end
+  NAMESPACED_CONSTANT::SUB = 2
+  include SmallEigenCollider::ConstantFinder
+
+  def test_constant_finding_works
+    namespaces = [self.class]
+    modules_found = get_all_constants_within_namespaces(namespaces, 5)
+    assert modules_found.include?(NAMESPACED_CONSTANT::SUB), "Can't find constants within a namespace"
+  end
+end

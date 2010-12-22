@@ -82,6 +82,31 @@ class SmallEigenCollider::Logger
   end
 end
 
+module SmallEigenCollider::ConstantFinder
+  # Given a list of namespaces, get all constants within them
+  def get_all_constants_within_namespaces(namespaces, maximum_depth)
+    current_constants = namespaces
+    result = []
+    (maximum_depth - 1).times do
+      new_constants = []
+      current_namespaces = current_constants.find_all{|c| c.is_a?(Module)}
+      current_namespaces.each do |current_namespace|
+        constants_within_current_namespace = current_namespace.constants.map do |const_name|
+          current_namespace.const_get(const_name)
+        end
+        new_constants += constants_within_current_namespace
+      end
+      new_constants.compact!
+      new_constants -= result # To avoid duplicates
+      result += new_constants
+      current_constants = new_constants
+    end
+    result.uniq!
+    result
+  end
+
+end
+
 class SmallEigenCollider::TaskCreator
   def initialize
     # FIXME make this configurable
