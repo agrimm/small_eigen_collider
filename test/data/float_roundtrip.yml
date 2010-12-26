@@ -1,0 +1,11 @@
+--- 
+- !ruby/object:SmallEigenCollider::Task 
+  method: +
+  original_method: +
+  original_parameter_objects: 
+  - 0.1
+  original_receiver_object: 0.1
+  parameter_objects: 
+  - 0.1
+  receiver_object: 0.1
+  status: :success
