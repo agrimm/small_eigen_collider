@@ -105,9 +105,20 @@ module SmallEigenCollider::ConstantFinder
     result
   end
 
+  # Get the top level modules (or classes) that don't cause the program to crash
+  def get_top_level_modules
+    non_small_eigen_collider_constant_names = Module.constants.reject{|con| con.to_s =~ /Small/}
+    possible_constants = non_small_eigen_collider_constant_names.map{|con| Kernel.const_get(con)}
+
+    # FIXME see if some constants that I'm currently rejecting can't be allowed in future versions
+    non_problematic_constants = (possible_constants - [Binding, STDERR]).reject{|con| con.class != Class and con.class != Module}
+    non_problematic_constants
+  end
 end
 
 class SmallEigenCollider::TaskCreator
+  include SmallEigenCollider::ConstantFinder
+
   def initialize
     # FIXME make this configurable
     srand(42)
@@ -125,11 +136,7 @@ class SmallEigenCollider::TaskCreator
     100.times do
       @objects << File
     end
-    non_small_eigen_collider_constant_names = Module.constants.reject{|con| con.to_s =~ /Small/}
-    possible_constants = non_small_eigen_collider_constant_names.map{|con| Kernel.const_get(con)}
-    # FIXME see if some constants that I'm currently rejecting can't be allowed in future versions
-    non_problematic_constants = (possible_constants - [Binding, STDERR]).reject{|con| con.class != Class}
-    @objects += non_problematic_constants
+    @objects += get_top_level_modules
   end
 
   def create_task
