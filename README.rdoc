@@ -1,14 +1,26 @@
+== ELEVATOR PITCH:
+
 Small Eigen Collider produces random ruby programs in order to compare the results under different ruby implementations.
+
+== HOW IT (KIND OF) WORKS:
 
 Random ruby programs are created by starting off with a set of objects and a set of method names. A receiver is selected at random from the set of objects, and then a method name is randomly selected, then a random number of random parameter objects. A block is also included in case the method chosen requires one.
 
 Once everything is chosen, the code
 
-result receiver_object.send(method, *parameter_objects, &block)
+receiver_object.send(method, *parameter_objects, &block)
 
 is run, and the inputs and the results are logged.
 
+== HOW TO USE IT:
+
 To compare different ruby implementations, run Small Eigen Collider under those implementations and look at the differences.
+
+== FILES PRODUCED:
+
+During an initial run, unfiltered_tasks.yml is created, listing the programs (tasks) the Small Eigen Collider is going to run. Then it runs the tasks. It then applies a filter, rejecting those that caused an exception, or ones that are known to produce different results under different implementations. The tasks are saved to tasks.yml, and a log file showing the results of the filtered tasks.
+
+During subsequent runs, the tasks listed in tasks.yml are run, and a log file specific to the implementation and patchlevel of the ruby implementation is produced, such as ruby_1.9.2_53_output.txt .
 
 == DISCLAIMER:
 
