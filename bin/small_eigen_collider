@@ -19,7 +19,7 @@ if File.exist?(yaml_filename)
   task_list = SmallEigenCollider::TaskList.new_using_yaml(yaml_filename)
   task_list.run_and_log_each_task(determine_output_filename)
 else
-  iterations = 20000
+  iterations = 200
   task_list = SmallEigenCollider::TaskList.new_using_creator(iterations)
   task_list.add_filter(:success_only)
   task_list.add_filter(:implementation_dependent)

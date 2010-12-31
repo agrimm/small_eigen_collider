@@ -153,7 +153,14 @@ class SmallEigenCollider::TaskCreator
     receiver_object = @objects[receiver_object_index]
     parameter_objects = @objects.values_at(*parameters_indexes)
 
-    receiver_object_methods = receiver_object.methods
+    # FIXME haven't examined what methods should be excluded.
+    # FIXME maybe this should be turned into a filter like with TaskList#passes_filter?
+    # This is done to prevent extremely weird stuff like running Fixnum.extend(MatchData)
+    # which, combined with calling String#drop(another_string) (which is bad behaviour anyway)
+    # could cause a segfault in Rubinius.
+    # FIXME restricting the methods use seem to make the program less likely to produce a YML output
+    receiver_object_methods = receiver_object.methods - (Kernel.methods - ["to_s", :to_s])
+    raise if receiver_object_methods.empty?
     method = receiver_object_methods[rand(receiver_object_methods.size)]
 
     task = SmallEigenCollider::Task.new(receiver_object, method, parameter_objects)
