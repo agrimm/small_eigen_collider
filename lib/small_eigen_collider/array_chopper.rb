@@ -7,75 +7,84 @@ class ArrayChopper
     @original_array = original_array
     @array_test = array_test
   end
- 
+
   def run
-    minimal_failure, maximal_success = find_minimal_and_maximal_given(@original_array, [])
-    @minimal_failure = minimal_failure
+    @minimal_failure = find_minimal_failure_for(@original_array)
   end
 
-  def find_minimal_and_maximal_given(known_failure, known_success)
-    return known_failure, known_success if known_failure.length - 1 == known_success.length
-    raise "success for known failure" if @array_test.call(known_failure)
-    raise "failure for known success #{known_success.inspect}" unless @array_test.call(known_success)
-    # Very naive algorithm
-    medium = find_medium_between(known_failure, known_success)
-    if @array_test.call(medium)
-      find_minimal_and_maximal_given(known_failure, medium)
+  def find_minimal_failure_for(array)
+    raise "Known bad passed" if @array_test.call(array)
+    failure_deletion_parameters = success_deletion_parameters = nil
+    until only_one_item_difference_between?(failure_deletion_parameters, success_deletion_parameters, array)
+      new_deletion_parameters = create_deletion_parameters_given_existing_parameters(failure_deletion_parameters, success_deletion_parameters, array)
+      new_array = create_array_given_deletion_parameters(array, new_deletion_parameters)
+      if @array_test.call(new_array)
+        success_deletion_parameters = new_deletion_parameters
+      else
+        failure_deletion_parameters = new_deletion_parameters
+      end
+    end
+    return array if failure_deletion_parameters.nil? # No smaller array also had a failure in this run
+    minimal_failure = create_array_given_deletion_parameters(array, failure_deletion_parameters)
+    minimal_failure
+  end
+
+  def only_one_item_difference_between?(failure_deletion_parameters, success_deletion_parameters, array)
+    # If we haven't found a case where there's a success, we haven't finished yet
+    return false if success_deletion_parameters.nil?
+
+    # If deleting a single item can cause a success, then we've finished
+    success_deletion_length = success_deletion_parameters.fetch(:finish) - success_deletion_parameters.fetch(:start) + 1
+    return true if success_deletion_length == 1
+
+    # Otherwise, we need a case where deleting n items causes a failure, but deleting n + 1 items causes a success
+    return false if failure_deletion_parameters.nil?
+    failure_deletion_length = failure_deletion_parameters.fetch(:finish) - failure_deletion_parameters.fetch(:start) + 1
+
+    return failure_deletion_length == success_deletion_length - 1
+  end
+
+  # Find something that's between failure_deletion_parameters and success_deletion_parameters
+  def create_deletion_parameters_given_existing_parameters(failure_deletion_parameters, success_deletion_parameters, array)
+    result = case
+    when (failure_deletion_parameters.nil? and success_deletion_parameters.nil?)
+      start = rand(array.length)
+      finish = rand(array.length - start) + start
+      {:start => start, :finish => finish}
+    when failure_deletion_parameters.nil?
+      start = success_deletion_parameters.fetch(:start)
+      finish = start
+      {:start => start, :finish => finish}
+    when success_deletion_parameters.nil?
+      if failure_deletion_parameters.fetch(:start) > 0
+        start = rand(failure_deletion_parameters.fetch(:start))
+        finish = failure_deletion_parameters.fetch(:finish)
+        return {:start => start, :finish => finish}
+      elsif failure_deletion_parameters.fetch(:finish) < array.length - 1
+        old_finish = failure_deletion_parameters.fetch(:finish)
+        start = failure_deletion_parameters.fetch(:start)
+        finish = rand(array.length - old_finish) + old_finish
+        return {:start => start, :finish => finish}
+      else raise
+      end
     else
-      find_minimal_and_maximal_given(medium, known_success)
+      earlier_start = success_deletion_parameters.fetch(:start)
+      later_start = failure_deletion_parameters.fetch(:start)
+      earlier_finish = failure_deletion_parameters.fetch(:finish)
+      later_finish = success_deletion_parameters.fetch(:finish)
+      start, finish = [[earlier_start, later_start], [earlier_finish, later_finish]].map do |earlier, later|
+        raise if earlier > later
+        new_value = earlier + rand(later - earlier + 1)
+        raise if new_value > later
+        new_value
+      end
+      return {:start => start, :finish => finish}
     end
   end
 
-  def find_medium_between(longer_array, shorter_array)
-    length_difference = longer_array.length - shorter_array.length
-    raise NotImplementedError, "Too lazy to handle nils" if longer_array.any?{|element| element.nil?}
-    raise ArgumentError, "You can't find a medium with between longer array #{longer_array.inspect} and shorter array #{shorter_array.inspect}" unless length_difference > 1
-    throwaway_variable, aligned_shorter_array = align_two_arrays(longer_array, shorter_array)
-    raise unless aligned_shorter_array.length == longer_array.length
-    difference_indexes = find_difference_indexes_for(longer_array, aligned_shorter_array)
-    raise unless difference_indexes.length == length_difference
-    indexes_to_add_to_shorter = choose_items_from_array(difference_indexes, length_difference / 2)
-    result = add_indexes_to_shorter(longer_array, shorter_array, indexes_to_add_to_shorter)
-    result
-  end
-  
-  def align_two_arrays(longer_array, shorter_array)
-    raise if (longer_array.empty? and not shorter_array.empty?)
-    return longer_array, shorter_array if longer_array.empty?
-    if longer_array.first == shorter_array.first
-      temp_variable = align_two_arrays(longer_array[1..-1], shorter_array[1..-1])
-      raise unless temp_variable[0].length == temp_variable[1].length
-      return ([longer_array.first] + temp_variable[0]), ([shorter_array.first] + temp_variable[1])
-    else
-      temp_variable = align_two_arrays(longer_array[1..-1], shorter_array)
-      raise unless temp_variable[0].length == temp_variable[1].length
-      return ([longer_array.first] + temp_variable[0]), ([nil] + temp_variable[1])
-    end
-  end # Up to here
-
-  def find_difference_indexes_for(longer_array, aligned_shorter_array)
-    raise if aligned_shorter_array.find_all{|element| element.nil?}.empty?
-    raise unless longer_array.length == aligned_shorter_array.length
-    result = []
-    longer_array.each_index do |i|
-      result << i if aligned_shorter_array.fetch(i).nil?
-    end
-    result
-  end
-
-  def choose_items_from_array(array, number_items)
-    raise "Trying to pick #{number_items} items from #{array.inspect}" if number_items > array.length
-    return [] if number_items == 0
-    random_index = rand(array.length)
-    random_item = array.fetch(random_index)
-    return [random_item] + choose_items_from_array(array[0...random_index] + array[(random_index + 1)..-1], number_items - 1)
-  end    
-
-  def add_indexes_to_shorter(longer_array, shorter_array, indexes_to_add_to_shorter)
-    throwaway_result, aligned_shorter_array = align_two_arrays(longer_array, shorter_array)
-    indexes_to_add_to_shorter.each do |index|
-      aligned_shorter_array[index] = longer_array[index]
-    end
-    aligned_shorter_array.find_all {|element| not element.nil?}
+  def create_array_given_deletion_parameters(array, deletion_parameters)
+    first_part = array[0...(deletion_parameters.fetch(:start))]
+    second_part = array[(deletion_parameters.fetch(:finish) + 1)..-1] || []
+    first_part + second_part
   end
 end
