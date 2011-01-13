@@ -288,6 +288,9 @@ class SmallEigenCollider::Task
         # Turning making GC.stress = true makes it *slow*. Don't do that!
         raise if @receiver_object == GC and method.to_s == "stress="
 
+        # At least one process method can cause problems
+        raise if @receiver_object.is_a?(Module) and @receiver_object.name == "Process"
+
         # secure_thread = Thread.new do
           # $SAFE doesn't help in all implementations of ruby
           # $SAFE = 2
