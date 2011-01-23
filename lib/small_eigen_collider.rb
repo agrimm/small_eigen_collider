@@ -211,11 +211,31 @@ class SmallEigenCollider::TaskList
       when :success_only
         task.success?
       when :implementation_dependent
-        next false if ["hash", "__id__", "object_id", "id", "constants", "public_instance_methods", "singleton_methods", "private_methods", "methods", "public_methods", "instance_methods", "private_instance_methods", "protected_instance_methods", "tainted?", "taint", "untaint"].include?(task.method.to_s)
-        true
+        passes_implementation_dependent_filter?(task)
       else raise "Unknown filter type"
       end
     end
+  end
+
+  def passes_implementation_dependent_filter?(task)
+    objects = [task.receiver_object] + task.parameter_objects
+    jruby_only_class_names = %w{Java}
+    one_eight_only_class_names = %w{Continuation Precision}
+    one_nine_only_class_names = %w{Psych Complex Random Syck Gem Encoding Enumerator Fiber RubyVM}
+    # Queue isn't rubinius only, but it appearing without requiring thread is unique
+    rubinius_only_class_names = %w{Queue Type}
+    problematic_class_names = jruby_only_class_names + one_eight_only_class_names + one_nine_only_class_names + rubinius_only_class_names
+    return false if ["hash", "__id__", "object_id", "id", "constants", "public_instance_methods", "singleton_methods", "private_methods", "methods", "public_methods", "instance_methods", "private_instance_methods", "protected_instance_methods", "tainted?", "taint", "untaint"].include?(task.method.to_s)
+
+    # Check if any of the receivers or parameters are class or module objects
+    # that exist (at least without using libraries) in a specific implementation
+    objects.each do |object|
+      next unless object.is_a?(Module)
+      return false if problematic_class_names.include?(object.name)
+      # Exceptions aren't allowed, as different implementations have their own exception classes
+      return false if object.ancestors.include?(Exception)
+    end
+    true
   end
 
   def filtered_tasks
@@ -264,9 +284,15 @@ class SmallEigenCollider::Task
 
   def safe_dup(object)
     case object
-    when Numeric, Symbol, NilClass, TrueClass, FalseClass, Class, Module, IO then return object
+    when Numeric, Symbol, NilClass, TrueClass, FalseClass, Class, Module, IO, Binding then return object
     when Array then return object.map{|element| safe_dup(element)}
-    else return object.dup
+    else
+      begin
+        object.dup
+      rescue
+        STDERR.puts "Problem duplicating #{object.inspect} of class #{object.class}"
+        raise
+      end
     end
   end
 

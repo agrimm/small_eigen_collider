@@ -28,7 +28,7 @@ elsif File.exist?(unfiltered_yaml_filename)
   task_list.run_and_log_each_task(determine_output_filename)
   task_list.dump_tasks_to_yaml(filtered_yaml_filename)
 else
-  iterations = 200
+  iterations = 500
   unfiltered_task_list = SmallEigenCollider::TaskList.new_using_creator(iterations)
   unfiltered_task_list.dump_tasks_to_yaml(unfiltered_yaml_filename)
 
