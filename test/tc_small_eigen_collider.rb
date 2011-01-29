@@ -59,6 +59,14 @@ class TestProgramWorks < Test::Unit::TestCase
     addition_task.run
     assert addition_task.success?, "Can't add 1 and 1 together"
   end
+
+  def test_task_list_timeout_works
+    task = SmallEigenCollider::Task.new(nil, "raise", [TaskListTimeout])
+    failure_message = "Swallows up the task list timeout exception when it should float up"
+    assert_raise(TaskListTimeout, failure_message) do
+      task.run
+    end
+  end
 end
 
 class TestRoundtripping < Test::Unit::TestCase

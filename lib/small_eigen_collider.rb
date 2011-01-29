@@ -298,7 +298,7 @@ class SmallEigenCollider::Task
 
   def run
     begin
-      Timeout.timeout(2) do
+      Timeout.timeout(2, IndividualTaskTimeout) do
         # taguri= is inconsistent between the initial run and from yaml. Not sure why, seems to be a fairly difficult task.
         # unpack crashes older versions of ruby 1.9.2
         # raise rather than run problem methods
@@ -326,9 +326,11 @@ class SmallEigenCollider::Task
         # end
         # secure_thread.join
       end
+    rescue TaskListTimeout
+      raise
     rescue SecurityError
       @status = :security_error
-    rescue Timeout::Error
+    rescue IndividualTaskTimeout
       @status = :timeout
     rescue Exception
       @status = :failure
@@ -369,4 +371,10 @@ class SmallEigenCollider::Task
     hard_to_marshal_properties = %{@result}
     super.reject {|yaml_property| hard_to_marshal_properties.include?(yaml_property.to_s)}
   end
+end
+
+class IndividualTaskTimeout < Timeout::Error
+end
+
+class TaskListTimeout < Timeout::Error
 end

@@ -28,13 +28,15 @@ elsif File.exist?(unfiltered_yaml_filename)
   task_list.run_and_log_each_task(determine_output_filename)
   task_list.dump_tasks_to_yaml(filtered_yaml_filename)
 else
-  iterations = 500
-  unfiltered_task_list = SmallEigenCollider::TaskList.new_using_creator(iterations)
-  unfiltered_task_list.dump_tasks_to_yaml(unfiltered_yaml_filename)
+  Timeout.timeout(45, TaskListTimeout) do
+    iterations = 500
+    unfiltered_task_list = SmallEigenCollider::TaskList.new_using_creator(iterations)
+    unfiltered_task_list.dump_tasks_to_yaml(unfiltered_yaml_filename)
 
-  task_list = SmallEigenCollider::TaskList.new_using_yaml(unfiltered_yaml_filename)
-  task_list.add_filter(:success_only)
-  task_list.add_filter(:implementation_dependent)
-  task_list.run_and_log_each_task(determine_output_filename)
-  task_list.dump_tasks_to_yaml(filtered_yaml_filename)
+    task_list = SmallEigenCollider::TaskList.new_using_yaml(unfiltered_yaml_filename)
+    task_list.add_filter(:success_only)
+    task_list.add_filter(:implementation_dependent)
+    task_list.run_and_log_each_task(determine_output_filename)
+    task_list.dump_tasks_to_yaml(filtered_yaml_filename)
+  end
 end
