@@ -218,14 +218,25 @@ class SmallEigenCollider::TaskList
   end
 
   def passes_implementation_dependent_filter?(task)
+    inherently_implementation_dependent_methods = ["hash", "__id__", "object_id", "id", "constants", "public_instance_methods", "singleton_methods", "private_methods", "methods", "public_methods", "instance_methods", "private_instance_methods", "protected_instance_methods", "tainted?", "taint", "untaint", "all_symbols", "ancestors", "superclass"]
+    # GC.count gives a no method error in JRuby
+    # ObjectSpace.count_objects gives a no method error in JRuby
+    # File.identical? raises in JRuby when the second parameter isn't a string, whereas it doesn't in YARV
+    # yaml's String#is_binary_data? returns nil on YARV, false on JRuby
+    # String#crypt gives a different result
+    # I don't know if this is because of it being implemntation dependent, or I gave it a silly parameter
+    different_in_jruby_methods = ["encoding", "count", "identical?", "is_binary_data?", "count_objects", "crypt"]
+    implementation_dependent_methods = inherently_implementation_dependent_methods + different_in_jruby_methods
+    return false if implementation_dependent_methods.include?(task.method.to_s)
+
     objects = [task.receiver_object] + task.parameter_objects
     jruby_only_class_names = %w{Java}
+    different_in_jruby_class_names = %w{RbConfig}
     one_eight_only_class_names = %w{Continuation Precision}
     one_nine_only_class_names = %w{Psych Complex Random Syck Gem Encoding Enumerator Fiber RubyVM}
     # Queue isn't rubinius only, but it appearing without requiring thread is unique
     rubinius_only_class_names = %w{Queue Type}
-    problematic_class_names = jruby_only_class_names + one_eight_only_class_names + one_nine_only_class_names + rubinius_only_class_names
-    return false if ["hash", "__id__", "object_id", "id", "constants", "public_instance_methods", "singleton_methods", "private_methods", "methods", "public_methods", "instance_methods", "private_instance_methods", "protected_instance_methods", "tainted?", "taint", "untaint"].include?(task.method.to_s)
+    problematic_class_names = jruby_only_class_names + different_in_jruby_class_names + one_eight_only_class_names + one_nine_only_class_names + rubinius_only_class_names
 
     # Check if any of the receivers or parameters are class or module objects
     # that exist (at least without using libraries) in a specific implementation
