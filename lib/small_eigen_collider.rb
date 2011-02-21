@@ -111,6 +111,8 @@ module SmallEigenCollider::ConstantFinder
     possible_constants = non_small_eigen_collider_constant_names.map{|con| Kernel.const_get(con)}
 
     # FIXME see if some constants that I'm currently rejecting can't be allowed in future versions
+    # Actually, maybe not. Classes and Modules are useful, because they can be used to create objects,
+    # but other constants are probably special objects that are hard to serialize
     non_problematic_constants = (possible_constants - [Binding, STDERR]).reject{|con| con.class != Class and con.class != Module}
     non_problematic_constants
   end
