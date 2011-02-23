@@ -243,7 +243,7 @@ class SmallEigenCollider::TaskList
   end
 
   def passes_implementation_dependent_filter?(task)
-    inherently_implementation_dependent_methods = ["hash", "__id__", "object_id", "id", "constants", "public_instance_methods", "singleton_methods", "private_methods", "methods", "public_methods", "instance_methods", "private_instance_methods", "protected_instance_methods", "tainted?", "taint", "untaint", "all_symbols", "ancestors", "superclass"]
+    inherently_implementation_dependent_methods = ["hash", "__id__", "object_id", "id", "constants", "public_instance_methods", "singleton_methods", "private_methods", "methods", "public_methods", "instance_methods", "private_instance_methods", "protected_instance_methods", "tainted?", "taint", "untaint", "all_symbols", "ancestors", "superclass", "id2name"]
     undefined_behaviour_methods = ["allocate"]
     # GC.count gives a no method error in JRuby
     # ObjectSpace.count_objects gives a no method error in JRuby
@@ -254,6 +254,22 @@ class SmallEigenCollider::TaskList
     different_in_jruby_methods = ["encoding", "count", "identical?", "is_binary_data?", "count_objects", "crypt"]
     implementation_dependent_methods = inherently_implementation_dependent_methods + undefined_behaviour_methods + different_in_jruby_methods
     return false if implementation_dependent_methods.include?(task.method.to_s)
+
+    different_in_rbx_combinations = ["Signal.list"]
+    # ObjectSpace.remove_finalizer is deprecated in favor of ObjectSpace.undefine_finalizer
+    # ObjectSpace.finalizers is deprecated - no need to test whether it's consistent between ruby implementations
+    mri_only_combinations = ["ObjectSpace.remove_finalizer", "ObjectSpace.finalizers"]
+    # Time.now and Time.new depend on the actual time, which keeps on changing!!!
+    inherently_different_combinations = ["Time.now", "Time.new"]
+    implementation_dependent_combinations = different_in_rbx_combinations + mri_only_combinations + inherently_different_combinations
+    return false if implementation_dependent_combinations.any? do |combination|
+      case combination
+      when /^(.+)\.(.+)$/
+        module_name, method_name = $1, $2
+        (task.receiver_object.is_a?(Module) and task.receiver_object.name == $1 and task.method.to_s == $2)
+      else raise "Unexpected scenario"
+      end
+    end
 
     objects = [task.receiver_object] + task.parameter_objects
     jruby_only_class_names = %w{Java}
