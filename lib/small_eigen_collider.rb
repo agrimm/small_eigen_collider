@@ -26,7 +26,28 @@ class Enumerable::Enumerator
   end
 end
 
+class Float
+  def consistent_inspect
+    super[0..5]
+  end
+end
+
 module SmallEigenCollider
+end
+
+module SmallEigenCollider::BoringInspect
+  # Different from Object#consistent_inspect to avoid confusion
+  def consistent_inspect
+    "#<#{self.class}:0xdecafbad>"
+  end
+end
+
+class IO
+  include SmallEigenCollider::BoringInspect
+end
+
+class Proc
+  include SmallEigenCollider::BoringInspect
 end
 
 class SmallEigenCollider::Logger
@@ -73,6 +94,7 @@ class SmallEigenCollider::Logger
 
   def consistent_inspect(object)
     begin
+      return object.sort.consistent_inspect if object.is_a?(Hash)
       object.consistent_inspect
     rescue # Unless things have really gone badly, they should be rescued here
       "Uninspectable object"
