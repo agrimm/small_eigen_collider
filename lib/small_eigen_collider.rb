@@ -357,7 +357,9 @@ class SmallEigenCollider::Task
           # $SAFE doesn't help in all implementations of ruby
           # $SAFE = 2
           # FIXME add a random block
-          @result = @receiver_object.send(@method, *@parameter_objects, &:consistent_inspect)
+          @result = @receiver_object.send(@method, *@parameter_objects) do |*block_args|
+            block_args.first.consistent_inspect
+          end
           @status = :success
         # end
         # secure_thread.join
