@@ -73,17 +73,17 @@ class SmallEigenCollider::Logger
   end
 
   def log_input_parameters(task)
-    @filestream.puts "Receiver object: " + consistent_inspect(task.receiver_object)
-    @filestream.puts "Method: " + consistent_inspect(task.method)
-    @filestream.puts "Parameters: " + consistent_inspect(task.parameter_objects)
+    @filestream.puts "Receiver object: " + consistently_inspect(task.receiver_object)
+    @filestream.puts "Method: " + consistently_inspect(task.method)
+    @filestream.puts "Parameters: " + consistently_inspect(task.parameter_objects)
   end
 
   def log_result(result)
-    @filestream.puts "Result: " + consistent_inspect(result)
+    @filestream.puts "Result: " + consistently_inspect(result)
   end
 
   def log_failure(receiver_object, method, parameter_objects)
-    @filestream.puts "Failure for #{consistent_inspect([receiver_object, method, parameter_objects].map{|x| consistent_inspect(x)})}"
+    @filestream.puts "Failure for #{[receiver_object, method, parameter_objects].map{|x| consistently_inspect(x)}.join(", ")}"
   end
 
   def log_end
@@ -96,7 +96,7 @@ class SmallEigenCollider::Logger
     @filestream.close
   end
 
-  def consistent_inspect(object)
+  def consistently_inspect(object)
     begin
       return object.sort.consistent_inspect if object.is_a?(Hash)
       return ["[", object.map(&:consistent_inspect).join(","), "]"].join if object.is_a?(Array)
