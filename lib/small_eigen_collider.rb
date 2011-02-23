@@ -50,6 +50,10 @@ class Proc
   include SmallEigenCollider::BoringInspect
 end
 
+class StringIO
+  include SmallEigenCollider::BoringInspect
+end
+
 class SmallEigenCollider::Logger
   def self.new_using_filename_or_filestream(filename_or_filestream)
     if filename_or_filestream.respond_to?("gets")
