@@ -95,6 +95,7 @@ class SmallEigenCollider::Logger
   def consistent_inspect(object)
     begin
       return object.sort.consistent_inspect if object.is_a?(Hash)
+      return ["[", object.map(&:consistent_inspect).join(","), "]"].join if object.is_a?(Array)
       object.consistent_inspect
     rescue # Unless things have really gone badly, they should be rescued here
       "Uninspectable object"
