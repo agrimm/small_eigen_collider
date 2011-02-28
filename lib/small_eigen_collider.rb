@@ -281,7 +281,8 @@ class SmallEigenCollider::TaskList
     one_eight_only_class_names = %w{Continuation Precision}
     one_nine_only_class_names = %w{Psych Complex Random Syck Gem Encoding Enumerator Fiber RubyVM SizedQueue ConditionVariable Mutex}
     # Queue isn't rubinius only, but it appearing without requiring thread is unique
-    rubinius_only_class_names = %w{Queue Type Rubinius}
+    # WeakRef isn't rubinius only, but it appearing without requiring weakref is
+    rubinius_only_class_names = %w{Queue WeakRef FFI Type Rubinius ImmediateValue}
     problematic_class_names = jruby_only_class_names + different_in_jruby_class_names + one_eight_only_class_names + one_nine_only_class_names + rubinius_only_class_names
 
     # Check if any of the receivers or parameters are class or module objects
