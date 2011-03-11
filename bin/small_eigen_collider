@@ -5,9 +5,6 @@ raise "Read the README, and understand this can harm your computer." unless File
 
 $VERBOSE = nil
 
-unfiltered_yaml_filename = "unfiltered_tasks.yml"
-filtered_yaml_filename = "tasks.yml"
-
 def determine_output_filename
   # FIXME be able to include the ruby implementation's version
   # FIXME should the output filename be chosen by the program like this?
@@ -16,27 +13,32 @@ def determine_output_filename
   output_filename
 end
 
-if File.exist?(filtered_yaml_filename)
-  task_list = SmallEigenCollider::TaskList.new_using_yaml(filtered_yaml_filename)
+runner_configurations = YAML.load_file("config/runner.yml")
+list_filtering_configuration = runner_configurations.fetch(:list_filtering)
+list_generation_configuration = runner_configurations.fetch(:list_generation)
+
+if File.exist?(list_filtering_configuration.fetch(:output_yaml_filename))
+  task_list = SmallEigenCollider::TaskList.new_using_yaml(list_generation_configuration.fetch(:output_yaml_filename))
   task_list.run_and_log_each_task(determine_output_filename)
-elsif File.exist?(unfiltered_yaml_filename)
+elsif File.exist?(list_filtering_configuration.fetch(:input_yaml_filename))
   # This should only happen if you created an unfiltered task list, and then it crashed
   # and you're trying to re-run it
-  task_list = SmallEigenCollider::TaskList.new_using_yaml(unfiltered_yaml_filename)
-  task_list.add_filter(:success_only)
-  task_list.add_filter(:implementation_dependent)
+  task_list = SmallEigenCollider::TaskList.new_using_yaml(list_filtering_configuration.fetch(:input_yaml_filename))
+  list_filtering_configuration.fetch(:filters).each do |filter|
+    task_list.add_filter(filter)
+  end
   task_list.run_and_log_each_task(determine_output_filename)
-  task_list.dump_tasks_to_yaml(filtered_yaml_filename)
+  task_list.dump_tasks_to_yaml(list_filtering_configuration.fetch(:output_yaml_filename))
 else
-  Timeout.timeout(45, TaskListTimeout) do
-    iterations = 500
-    unfiltered_task_list = SmallEigenCollider::TaskList.new_using_creator(iterations)
-    unfiltered_task_list.dump_tasks_to_yaml(unfiltered_yaml_filename)
+  Timeout.timeout(list_generation_configuration.fetch(:timeout), TaskListTimeout) do
+    unfiltered_task_list = SmallEigenCollider::TaskList.new_using_creator(list_generation_configuration.fetch(:iterations))
+    unfiltered_task_list.dump_tasks_to_yaml(list_generation_configuration.fetch(:output_yaml_filename))
 
-    task_list = SmallEigenCollider::TaskList.new_using_yaml(unfiltered_yaml_filename)
-    task_list.add_filter(:success_only)
-    task_list.add_filter(:implementation_dependent)
+    task_list = SmallEigenCollider::TaskList.new_using_yaml(list_generation_configuration.fetch(:output_yaml_filename))
+    list_filtering_configuration.fetch(:filters).each do |filter|
+      task_list.add_filter(filter)
+    end
     task_list.run_and_log_each_task(determine_output_filename)
-    task_list.dump_tasks_to_yaml(filtered_yaml_filename)
+    task_list.dump_tasks_to_yaml(list_filtering_configuration.fetch(:output_yaml_filename))
   end
 end

@@ -1,0 +1,12 @@
+--- 
+:list_generation: 
+  :timeout: 45
+  :iterations: 500
+  :output_yaml_filename: unfiltered_tasks.yml
+:list_filtering: 
+  :filters: 
+  - :success_only
+  - :implementation_dependent
+  :input_yaml_filename: unfiltered_tasks.yml
+  :output_yaml_filename: tasks.yml
+
