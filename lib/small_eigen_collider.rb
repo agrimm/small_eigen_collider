@@ -276,10 +276,12 @@ class SmallEigenCollider::TaskList
     end
 
     objects = [task.receiver_object] + task.parameter_objects
-    jruby_only_class_names = %w{Java}
+    # Generator also exists in MRI Ruby 1.8 (but as a standard library not as core), but apparently not YARV
+    # Config seems to be a deprecated name for RbConfig
+    jruby_only_class_names = %w{Java Generator Config}
     different_in_jruby_class_names = %w{RbConfig}
     one_eight_only_class_names = %w{Continuation Precision}
-    one_nine_only_class_names = %w{Psych Complex Random Syck Gem Encoding Enumerator Fiber RubyVM SizedQueue ConditionVariable Mutex}
+    one_nine_only_class_names = %w{Psych Complex Random Syck Gem Encoding Enumerator Fiber RubyVM SizedQueue ConditionVariable Mutex BasicObject}
     # Queue isn't rubinius only, but it appearing without requiring thread is unique
     # WeakRef isn't rubinius only, but it appearing without requiring weakref is
     rubinius_only_class_names = %w{Queue WeakRef FFI Type Rubinius ImmediateValue}
