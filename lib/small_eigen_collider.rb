@@ -6,12 +6,6 @@ $:.unshift File.join(File.dirname(__FILE__), "small_eigen_collider")
 
 require "serialization"
 
-# FIXME intended structure: 
-# # A class that generates a variety of receivers, methods, parameters and blocks
-# # A class representing a single action
-# # Module for logging
-# # A monkey-patched method that'd enable an object id and implementation-independent representation of an object
-
 class Object
   def consistent_inspect
     # The gsub is to deal with the object id portion of #<Object:0x12345678> being different each time
@@ -330,6 +324,8 @@ class SmallEigenCollider::TaskList
   end
 end
 
+# This isn't run with a $SAFE level, because it made things slower,
+# and isn't guaranteed to work with all implementations of Ruby anyway.
 class SmallEigenCollider::Task
   def initialize(receiver_object, method, parameter_objects)
     @original_receiver_object, @original_method, @original_parameter_objects = receiver_object, method, parameter_objects
@@ -377,16 +373,11 @@ class SmallEigenCollider::Task
         # At least one process method can cause problems
         raise if @receiver_object.is_a?(Module) and @receiver_object.name == "Process"
 
-        # secure_thread = Thread.new do
-          # $SAFE doesn't help in all implementations of ruby
-          # $SAFE = 2
-          # FIXME add a random block
-          @result = @receiver_object.send(@method, *@parameter_objects) do |*block_args|
-            block_args.first.consistent_inspect
-          end
-          @status = :success
-        # end
-        # secure_thread.join
+        # FIXME add a random block
+        @result = @receiver_object.send(@method, *@parameter_objects) do |*block_args|
+          block_args.first.consistent_inspect
+        end
+        @status = :success
       end
     rescue TaskListTimeout
       raise
