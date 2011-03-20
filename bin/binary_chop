@@ -1,8 +1,10 @@
 $:.unshift File.join(File.dirname(__FILE__), "..", "lib", "small_eigen_collider")
+$:.unshift File.join(File.dirname(__FILE__), "..", "lib")
 
 require "yaml"
 require "serialization"
 require "array_chopper"
+require "small_eigen_collider" # FIXME this is a bit of a hack
 
 raise "known_bad.yml doesn't exist - this file is required to indicate what should crash the ruby" unless File.exist?("known_bad.yml")
 
@@ -13,8 +15,11 @@ if __FILE__ == $0
   array_test = Proc.new do |array|
     STDERR.puts "Array size is #{array.size}"
     sleep 1
-    File.open("tasks.yml", "w") {|f| YAML.dump(array, f)}
-    result = system("ruby bin/small_eigen_collider")
+    File.delete("tasks.yml") if File.exist?("tasks.yml")
+    File.open("unfiltered_tasks.yml", "w") {|f| YAML.dump(array, f)}
+    program_didnt_crash = system("ruby bin/small_eigen_collider")
+    program_didnt_finish_prematurely = File.exist?("tasks.yml")
+    result = program_didnt_crash && program_didnt_finish_prematurely
     STDERR.puts "Result for array size of #{array.size} was #{result.inspect}"
     result
   end
