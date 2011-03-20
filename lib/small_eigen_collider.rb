@@ -196,7 +196,7 @@ class SmallEigenCollider::TaskFilter
   def self.new_filter(filter_type)
     case filter_type
       when :success_only then SuccessTaskFilter.new
-      when :implementation_dependent then ImplementationDependentTaskFilter.new
+      when :implementation_dependent then ImplementationDependentTaskFilter.new_using_filename("config/implementation_dependent_tasks.txt")
       else raise "Unknown filter type"
     end
   end
@@ -205,8 +205,29 @@ end
 
 class SmallEigenCollider::TaskFilter::ImplementationDependentTaskFilter
 
+  def self.new_using_filename(filename)
+    new_using_text(File.read(filename))
+  end
+
+  def self.new_using_text(text)
+    class_methods = []
+    instance_methods = []
+    text.split("\n").each do |line|
+      case
+        when line =~ /^(.+)#(.+)$/
+          instance_methods << {:class_name => $1, :method_name => $2}
+        else raise "Unexpected scenario!"
+      end
+    end
+    new(class_methods, instance_methods)
+  end
+
+  def initialize(class_methods, instance_methods)
+    @class_methods, @instance_methods = class_methods, instance_methods
+  end
+
   def task_passes?(task)
-    inherently_implementation_dependent_methods = ["hash", "__id__", "object_id", "id", "constants", "public_instance_methods", "singleton_methods", "private_methods", "methods", "public_methods", "instance_methods", "private_instance_methods", "protected_instance_methods", "tainted?", "taint", "untaint", "all_symbols", "ancestors", "superclass", "id2name"]
+    inherently_implementation_dependent_methods = ["__id__", "object_id", "id", "constants", "public_instance_methods", "singleton_methods", "private_methods", "methods", "public_methods", "instance_methods", "private_instance_methods", "protected_instance_methods", "tainted?", "taint", "untaint", "all_symbols", "ancestors", "superclass", "id2name"]
     undefined_behaviour_methods = ["allocate"]
     # GC.count gives a no method error in JRuby
     # ObjectSpace.count_objects gives a no method error in JRuby
@@ -232,6 +253,11 @@ class SmallEigenCollider::TaskFilter::ImplementationDependentTaskFilter
         (task.receiver_object.is_a?(Module) and task.receiver_object.name == $1 and task.method.to_s == $2)
       else raise "Unexpected scenario"
       end
+    end
+
+    return false if @instance_methods.any? do |instance_method_combination|
+      next unless task.receiver_object.class.ancestors.map(&:to_s).include?(instance_method_combination.fetch(:class_name))
+      task.method.to_s == instance_method_combination.fetch(:method_name)
     end
 
     objects = [task.receiver_object] + task.parameter_objects
