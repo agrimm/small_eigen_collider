@@ -191,56 +191,21 @@ class SmallEigenCollider::TaskCreator
   end
 end
 
-class SmallEigenCollider::TaskList
-  extend Forwardable
-  # empty? is just used for testing. Don't know whether it should be based on :@tasks or filtered_tasks
-  def_delegators :@tasks, :empty?
+class SmallEigenCollider::TaskFilter
 
-  def self.new_using_creator(iterations)
-    task_creator = SmallEigenCollider::TaskCreator.new
-    tasks = iterations.times.map {task_creator.create_task}
-    new(tasks)
-  end
-
-  def self.new_using_yaml(yaml_filename)
-    tasks = load_tasks(File.read(yaml_filename))
-    new(tasks)
-  end
-
-  # Only used in testing
-  def self.new_using_yaml_string(yaml_string)
-    tasks = load_tasks(yaml_string)
-    new(tasks)
-  end
-
-  def self.load_tasks(yaml_string)
-    tasks = YAML.load(yaml_string)
-    tasks.each {|task| task.reinitialize}
-    tasks
-  end
-
-  def initialize(tasks)
-    @tasks = tasks
-    @filters = []
-  end
-
-  def add_filter(type)
-    @filters << type
-  end
-
-  def passes_filters?(task)
-    @filters.all? do |filter|
-      case filter
-      when :success_only
-        task.success?
-      when :implementation_dependent
-        passes_implementation_dependent_filter?(task)
+  def self.new_filter(filter_type)
+    case filter_type
+      when :success_only then SuccessTaskFilter.new
+      when :implementation_dependent then ImplementationDependentTaskFilter.new
       else raise "Unknown filter type"
-      end
     end
   end
+end
 
-  def passes_implementation_dependent_filter?(task)
+
+class SmallEigenCollider::TaskFilter::ImplementationDependentTaskFilter
+
+  def task_passes?(task)
     inherently_implementation_dependent_methods = ["hash", "__id__", "object_id", "id", "constants", "public_instance_methods", "singleton_methods", "private_methods", "methods", "public_methods", "instance_methods", "private_instance_methods", "protected_instance_methods", "tainted?", "taint", "untaint", "all_symbols", "ancestors", "superclass", "id2name"]
     undefined_behaviour_methods = ["allocate"]
     # GC.count gives a no method error in JRuby
@@ -290,6 +255,58 @@ class SmallEigenCollider::TaskList
       return false if object.ancestors.include?(Exception)
     end
     true
+  end
+
+end
+
+class SmallEigenCollider::TaskFilter::SuccessTaskFilter
+
+  def task_passes?(task)
+    task.success?
+  end
+end
+
+class SmallEigenCollider::TaskList
+  extend Forwardable
+  # empty? is just used for testing. Don't know whether it should be based on :@tasks or filtered_tasks
+  def_delegators :@tasks, :empty?
+
+  def self.new_using_creator(iterations)
+    task_creator = SmallEigenCollider::TaskCreator.new
+    tasks = iterations.times.map {task_creator.create_task}
+    new(tasks)
+  end
+
+  def self.new_using_yaml(yaml_filename)
+    tasks = load_tasks(File.read(yaml_filename))
+    new(tasks)
+  end
+
+  # Only used in testing
+  def self.new_using_yaml_string(yaml_string)
+    tasks = load_tasks(yaml_string)
+    new(tasks)
+  end
+
+  def self.load_tasks(yaml_string)
+    tasks = YAML.load(yaml_string)
+    tasks.each {|task| task.reinitialize}
+    tasks
+  end
+
+  def initialize(tasks)
+    @tasks = tasks
+    @filters = []
+  end
+
+  def add_filter(type)
+    @filters << SmallEigenCollider::TaskFilter.new_filter(type)
+  end
+
+  def passes_filters?(task)
+    @filters.all? do |filter|
+      filter.task_passes?(task)
+    end
   end
 
   def filtered_tasks
