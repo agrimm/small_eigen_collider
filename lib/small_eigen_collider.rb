@@ -196,7 +196,7 @@ class SmallEigenCollider::TaskFilter
   def self.new_filter(filter_type)
     case filter_type
       when :success_only then SuccessTaskFilter.new
-      when :implementation_dependent then ImplementationDependentTaskFilter.new_using_filename("config/implementation_dependent_tasks.txt")
+      when :implementation_dependent then ImplementationDependentTaskFilter.new_using_filenames("config/implementation_dependent_tasks.txt", "config/implementation_dependent_classes.txt")
       else raise "Unknown filter type"
     end
   end
@@ -205,78 +205,51 @@ end
 
 class SmallEigenCollider::TaskFilter::ImplementationDependentTaskFilter
 
-  def self.new_using_filename(filename)
-    new_using_text(File.read(filename))
+  def self.new_using_filenames(methods_filename, classes_filename)
+    new_using_texts(File.read(methods_filename), File.read(classes_filename))
   end
 
-  def self.new_using_text(text)
+  def self.new_using_texts(methods_text, classes_text)
     class_methods = []
     instance_methods = []
-    text.split("\n").each do |line|
+    method_descriptions = methods_text.split("\n").reject{|line| line =~ /^# /}.map{|line| line.split(", ")}.flatten
+    method_descriptions.each do |method_description|
       case
-        when line =~ /^(.+)#(.+)$/
+        when method_description =~ /^(\w+)#([?\w]+)$/
           instance_methods << {:class_name => $1, :method_name => $2}
-        else raise "Unexpected scenario!"
+        when method_description =~ /^(\w+).([?\w]+)$/
+          class_methods << {:class_name => $1, :method_name => $2}
+        else raise "Unexpected scenario for #{method_description.inspect}!"
       end
     end
-    new(class_methods, instance_methods)
+    classes = classes_text.split("\n").reject{|line| line =~ /^# /}.map{|line| line.split(", ")}.flatten
+
+    new(class_methods, instance_methods, classes)
   end
 
-  def initialize(class_methods, instance_methods)
-    @class_methods, @instance_methods = class_methods, instance_methods
+  def initialize(class_methods, instance_methods, class_names)
+    @class_methods, @instance_methods, @class_names = class_methods, instance_methods, class_names
   end
 
   def task_passes?(task)
-    inherently_implementation_dependent_methods = ["__id__", "object_id", "id", "constants", "public_instance_methods", "singleton_methods", "private_methods", "methods", "public_methods", "instance_methods", "private_instance_methods", "protected_instance_methods", "tainted?", "taint", "untaint", "all_symbols", "ancestors", "superclass", "id2name"]
-    undefined_behaviour_methods = ["allocate"]
-    # GC.count gives a no method error in JRuby
-    # ObjectSpace.count_objects gives a no method error in JRuby
-    # File.identical? raises in JRuby when the second parameter isn't a string, whereas it doesn't in YARV
-    # yaml's String#is_binary_data? returns nil on YARV, false on JRuby
-    # String#crypt gives a different result
-    # I don't know if this is because of it being implemntation dependent, or I gave it a silly parameter
-    different_in_jruby_methods = ["encoding", "count", "identical?", "is_binary_data?", "count_objects", "crypt"]
-    implementation_dependent_methods = inherently_implementation_dependent_methods + undefined_behaviour_methods + different_in_jruby_methods
-    return false if implementation_dependent_methods.include?(task.method.to_s)
-
-    different_in_rbx_combinations = ["Signal.list"]
-    # ObjectSpace.remove_finalizer is deprecated in favor of ObjectSpace.undefine_finalizer
-    # ObjectSpace.finalizers is deprecated - no need to test whether it's consistent between ruby implementations
-    mri_only_combinations = ["ObjectSpace.remove_finalizer", "ObjectSpace.finalizers"]
-    # Time.now and Time.new depend on the actual time, which keeps on changing!!!
-    inherently_different_combinations = ["Time.now", "Time.new"]
-    implementation_dependent_combinations = different_in_rbx_combinations + mri_only_combinations + inherently_different_combinations
-    return false if implementation_dependent_combinations.any? do |combination|
-      case combination
-      when /^(.+)\.(.+)$/
-        module_name, method_name = $1, $2
-        (task.receiver_object.is_a?(Module) and task.receiver_object.name == $1 and task.method.to_s == $2)
-      else raise "Unexpected scenario"
-      end
-    end
-
     return false if @instance_methods.any? do |instance_method_combination|
       next unless task.receiver_object.class.ancestors.map(&:to_s).include?(instance_method_combination.fetch(:class_name))
       task.method.to_s == instance_method_combination.fetch(:method_name)
     end
 
+    return false if @class_methods.any? do |class_method_combination|
+      next unless task.receiver_object.is_a?(Module)
+      next unless task.receiver_object.name == class_method_combination.fetch(:class_name)
+      task.method.to_s == class_method_combination.fetch(:method_name)
+    end
+
     objects = [task.receiver_object] + task.parameter_objects
-    # Generator also exists in MRI Ruby 1.8 (but as a standard library not as core), but apparently not YARV
-    # Config seems to be a deprecated name for RbConfig
-    jruby_only_class_names = %w{Java Generator Config}
-    different_in_jruby_class_names = %w{RbConfig}
-    one_eight_only_class_names = %w{Continuation Precision}
-    one_nine_only_class_names = %w{Psych Complex Random Syck Gem Encoding Enumerator Fiber RubyVM SizedQueue ConditionVariable Mutex BasicObject}
-    # Queue isn't rubinius only, but it appearing without requiring thread is unique
-    # WeakRef isn't rubinius only, but it appearing without requiring weakref is
-    rubinius_only_class_names = %w{Queue WeakRef FFI Type Rubinius ImmediateValue}
-    problematic_class_names = jruby_only_class_names + different_in_jruby_class_names + one_eight_only_class_names + one_nine_only_class_names + rubinius_only_class_names
 
     # Check if any of the receivers or parameters are class or module objects
     # that exist (at least without using libraries) in a specific implementation
     objects.each do |object|
       next unless object.is_a?(Module)
-      return false if problematic_class_names.include?(object.name)
+      return false if @class_names.include?(object.name)
       # Exceptions aren't allowed, as different implementations have their own exception classes
       return false if object.ancestors.include?(Exception)
     end

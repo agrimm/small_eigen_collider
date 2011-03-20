@@ -140,6 +140,26 @@ class TestFilter < Test::Unit::TestCase
     implementation_dependent_task_task_list.add_filter(:implementation_dependent)
     assert_equal true, task_list_output_empty?(implementation_dependent_task_task_list), "Fails to filter implementation dependent tasks"
   end
+
+  def test_filter_class_method_defined_as_class_hash_foo
+    task_list = create_single_item_task_list(Time, "allocate", [])
+    task_list.add_filter(:implementation_dependent)
+    assert_equal true, task_list_output_empty?(task_list), "Fails to filter implementation dependent class methods"
+  end
+
+  def test_filter_class_method_defined_as_foo_dot_bar
+    task_list = create_single_item_task_list(GC, "count", [])
+    task_list.add_filter(:implementation_dependent)
+    assert_equal true, task_list_output_empty?(task_list), "Fails to filter implementation dependent class methods defined as Foo.bar()"
+  end
+
+  def test_detect_implementation_dependent_class
+    require "thread"
+    task_list = create_single_item_task_list(Queue, "new", [])
+    task_list.add_filter(:implementation_dependent)
+    assert_equal true, task_list_output_empty?(task_list), "Fails to filter implementation dependent classes"
+  end
+
 end
 
 class TestObjectGeneration < Test::Unit::TestCase

@@ -1,0 +1,13 @@
+# Java is somewhat implementation specific!
+# Generator also exists in MRI Ruby 1.8 (but as a standard library not as core), but apparently not YARV
+# Config seems to be a deprecated name for RbConfig
+Java, Generator, Config
+# Different in JRuby
+RbConfig
+# 1.8 only
+Continuation, Precision
+# 1.9 only
+Psych, Complex, Random, Syck, Gem, Encoding, Enumerator, Fiber, RubyVM, SizedQueue, ConditionVariable, Mutex, BasicObject
+# Queue isn't rubinius only, but it appearing without requiring thread is unique
+# WeakRef isn't rubinius only, but it appearing without requiring weakref is
+Queue, WeakRef, FFI, Type, Rubinius, ImmediateValue

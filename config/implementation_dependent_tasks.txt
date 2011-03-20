@@ -1,1 +1,23 @@
-Object#hash
+# Inherently implementation dependent methods
+Object#hash, Object#__id__, Object#object_id, Object#id, Object#constants, Object#public_instance_methods, Object#singleton_methods, Object#private_methods, Object#methods, Object#public_methods, Object#instance_methods, Object#private_instance_methods, Object#protected_instance_methods, Object#tainted?, Object#taint, Object#untaint, Object#all_symbols, Object#ancestors, Object#superclass, Object#id2name
+# Undefined behaviour methods
+Class#allocate
+# GC.count gives a no method error in JRuby
+GC.count
+# ObjectSpace.count_objects gives a no method error in JRuby
+ObjectSpace.count_objects
+# File.identical? raises in JRuby when the second parameter isn't a string, whereas it doesn't in YARV
+File.identical?
+# yaml's String#is_binary_data? returns nil on YARV, false on JRuby
+String#is_binary_data?
+# String#crypt gives a different result
+# I don't know if this is because of it being implemntation dependent, or I gave it a silly parameter
+String#crypt
+# Different in Rubinius
+Signal.list
+# ObjectSpace.remove_finalizer is deprecated in favor of ObjectSpace.undefine_finalizer
+# ObjectSpace.finalizers is deprecated - no need to test whether it's consistent between ruby implementations
+ObjectSpace.remove_finalizer, ObjectSpace.finalizers
+# Time stands still for no Ruby implementation
+Time.now, Time.new
+
