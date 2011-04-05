@@ -371,6 +371,8 @@ class SmallEigenCollider::Task
   def run
     begin
       Timeout.timeout(2, IndividualTaskTimeout) do
+        # FIXME this logic should be refactored out
+        raise if @method.to_s == "s_exit"
         # taguri= is inconsistent between the initial run and from yaml. Not sure why, seems to be a fairly difficult task.
         # unpack crashes older versions of ruby 1.9.2
         # raise rather than run problem methods
