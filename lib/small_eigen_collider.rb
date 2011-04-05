@@ -68,7 +68,7 @@ class SmallEigenCollider::Logger
 
   def log_input_parameters(task)
     @filestream.puts "Receiver object: " + consistently_inspect(task.receiver_object)
-    @filestream.puts "Method: " + consistently_inspect(task.method)
+    @filestream.puts "Method: " + consistently_inspect(task.task_method)
     @filestream.puts "Parameters: " + consistently_inspect(task.parameter_objects)
   end
 
@@ -234,13 +234,13 @@ class SmallEigenCollider::TaskFilter::ImplementationDependentTaskFilter
   def task_passes?(task)
     return false if @instance_methods.any? do |instance_method_combination|
       next unless task.receiver_object.class.ancestors.map(&:to_s).include?(instance_method_combination.fetch(:class_name))
-      task.method.to_s == instance_method_combination.fetch(:method_name)
+      task.task_method.to_s == instance_method_combination.fetch(:method_name)
     end
 
     return false if @class_methods.any? do |class_method_combination|
       next unless task.receiver_object.is_a?(Module)
       next unless task.receiver_object.name == class_method_combination.fetch(:class_name)
-      task.method.to_s == class_method_combination.fetch(:method_name)
+      task.task_method.to_s == class_method_combination.fetch(:method_name)
     end
 
     objects = [task.receiver_object] + task.parameter_objects
@@ -428,7 +428,7 @@ class SmallEigenCollider::Task
     @original_receiver_object
   end
 
-  def method
+  def task_method
     @original_method
   end
 
