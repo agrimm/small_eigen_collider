@@ -215,11 +215,12 @@ class SmallEigenCollider::TaskFilter::ImplementationDependentTaskFilter
     method_descriptions = methods_text.split("\n").reject{|line| line =~ /^# /}.map{|line| line.split(", ")}.flatten
     method_descriptions.each do |method_description|
       case
-        when method_description =~ /^(\w+)#([?\w]+)$/
+        # FIXME this logic isn't fully unit tested
+        when method_description =~ /^(\w+)#([?\w]+[=]?)$/
           instance_methods << {:class_name => $1, :method_name => $2}
-        when method_description =~ /^(\w+).([?\w]+)$/
+        when method_description =~ /^(\w+)\.([?\w]+[=]?)$/
           class_methods << {:class_name => $1, :method_name => $2}
-        else raise "Unexpected scenario for #{method_description.inspect}!"
+        else raise "Couldn't parse #{method_description.inspect}!"
       end
     end
     classes = classes_text.split("\n").reject{|line| line =~ /^# /}.map{|line| line.split(", ")}.flatten
