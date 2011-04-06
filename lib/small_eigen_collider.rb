@@ -257,12 +257,19 @@ class SmallEigenCollider::TaskFilter::ImplementationDependentTaskFilter
     true
   end
 
+  def pre_running_filter?
+    true
+  end
 end
 
 class SmallEigenCollider::TaskFilter::SuccessTaskFilter
 
   def task_passes?(task)
     task.success?
+  end
+
+  def pre_running_filter?
+    false
   end
 end
 
@@ -309,6 +316,17 @@ class SmallEigenCollider::TaskList
     end
   end
 
+  def pre_running_filters() @filters.find_all(&:pre_running_filter?) end
+  def post_running_filters() @filters.reject(&:pre_running_filter?) end
+
+  def passes_pre_running_filters?(task)
+    pre_running_filters.all? {|filter| filter.task_passes?(task)}
+  end
+
+  def passes_post_running_filters?(task)
+    post_running_filters.all? {|filter| filter.task_passes?(task)}
+  end
+
   def filtered_tasks
     @tasks.find_all{|task| passes_filters?(task)}
   end
@@ -318,10 +336,11 @@ class SmallEigenCollider::TaskList
     task_number = 1
     # Imperitive code written because otherwise no previous tasks would be printed if it gets printed
     @tasks.each do |task|
+      next unless passes_pre_running_filters?(task)
       # Fixme if this triggers a fatal error, you can't see what triggered it
       task.run
 
-      next unless passes_filters?(task)
+      next unless passes_post_running_filters?(task)
       logger.log_start(task_number)
       logger.log_input_parameters(task)
       task.log_result(logger)
