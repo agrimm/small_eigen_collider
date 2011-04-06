@@ -160,6 +160,13 @@ class TestFilter < Test::Unit::TestCase
     assert_equal true, task_list_output_empty?(task_list), "Fails to filter implementation dependent classes"
   end
 
+  # Testing existing functionality
+  def test_filter_gc_stress
+    task_list = create_single_item_task_list(GC, "stress=", [true])
+    task_list.add_filter(:success_only)
+    assert_equal true, task_list_output_empty?(task_list), "Fails to filter crash inducing methods"
+    assert_equal false, GC.stress, "Fails to filter crash inducing methods before they happen"
+  end
 end
 
 class TestObjectGeneration < Test::Unit::TestCase
