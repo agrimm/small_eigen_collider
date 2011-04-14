@@ -1,0 +1,13 @@
+# taguri= is inconsistent between the initial run and from yaml. Not sure why, seems to be a fairly difficult task.
+Object#taguri=
+# unpack crashes older versions of ruby 1.9.2
+String#unpack
+Object#instance_exec, Object#instance_eval
+Object#s_exit
+# This is only required for some versions of ruby 1.9 (eg 1.9.2-p0) where it
+# prevents ruby from crashing
+Class.new
+# Turning making GC.stress = true makes it *slow*. Don't do that!
+GC.stress=
+# At least one process method can cause problems
+Module#process

@@ -1,12 +1,13 @@
 --- 
 :list_generation: 
-  :timeout: 45
+  :timeout: 90 # RBX is currently the laggard
   :iterations: 500
   :output_yaml_filename: unfiltered_tasks.yml
 :list_filtering: 
   :filters: 
   - :success_only
   - :implementation_dependent
+  - :crash_inducing
   :input_yaml_filename: unfiltered_tasks.yml
   :output_yaml_filename: tasks.yml
 

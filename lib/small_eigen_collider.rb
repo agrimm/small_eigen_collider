@@ -197,6 +197,7 @@ class SmallEigenCollider::TaskFilter
     case filter_type
       when :success_only then SuccessTaskFilter.new
       when :implementation_dependent then ImplementationDependentTaskFilter.new_using_filenames("config/implementation_dependent_tasks.txt", "config/implementation_dependent_classes.txt")
+      when :crash_inducing then ImplementationDependentTaskFilter.new_using_filenames("config/crash_inducing_tasks.txt", "config/crash_inducing_classes.txt")
       else raise "Unknown filter type"
     end
   end
@@ -391,25 +392,9 @@ class SmallEigenCollider::Task
   def run
     begin
       Timeout.timeout(2, IndividualTaskTimeout) do
-        # FIXME this logic should be refactored out
-        raise if @method.to_s == "s_exit"
-        # taguri= is inconsistent between the initial run and from yaml. Not sure why, seems to be a fairly difficult task.
-        # unpack crashes older versions of ruby 1.9.2
-        # raise rather than run problem methods
-        problem_methods = ["taguri=", "unpack", "instance_exec", "instance_eval"]
-        raise if problem_methods.include?(@method.to_s)
-
         # In JRuby, File.open(4) seems to make errors raise when flushing the log file
+        # the crash inducing tasks filter isn't currently capable of letting all calls except when the first parameter is a Fixnum
         raise if @receiver_object == File and "open" == @method.to_s and Fixnum === @parameter_objects.first
-        # Hack to avoid creating anonymous classes, which is tested for later on anyway.
-        # This line is only required for some versions of ruby 1.9 (eg 1.9.2-p0) where it
-        # prevents ruby from crashing
-        raise if @receiver_object == Class and method.to_s == "new"
-        # Turning making GC.stress = true makes it *slow*. Don't do that!
-        raise if @receiver_object == GC and method.to_s == "stress="
-
-        # At least one process method can cause problems
-        raise if @receiver_object.is_a?(Module) and @receiver_object.name == "Process"
 
         # FIXME add a random block
         @result = @receiver_object.send(@method, *@parameter_objects) do |*block_args|

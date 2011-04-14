@@ -8,4 +8,4 @@
   parameter_objects: []
 
   receiver_object: !ruby/class Class
-  status: :failure
+  status: :success
