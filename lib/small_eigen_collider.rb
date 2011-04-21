@@ -26,6 +26,12 @@ class Float
   end
 end
 
+class Struct::Tms
+  def consistent_inspect
+    (["hammertime!"] * 4).inspect
+  end
+end
+
 module SmallEigenCollider
 end
 
