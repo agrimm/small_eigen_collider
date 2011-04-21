@@ -8,6 +8,8 @@ GC.count
 ObjectSpace.count_objects
 # File.identical? raises in JRuby when the second parameter isn't a string, whereas it doesn't in YARV
 File.identical?
+# piping doesn't work too well in JRuby. I think it's because JRuby doesn't like forking
+File.pipe, File.popen, IO.pipe
 # yaml's String#is_binary_data? returns nil on YARV, false on JRuby
 String#is_binary_data?
 # String#crypt gives a different result
@@ -18,6 +20,14 @@ Signal.list
 # ObjectSpace.remove_finalizer is deprecated in favor of ObjectSpace.undefine_finalizer
 # ObjectSpace.finalizers is deprecated - no need to test whether it's consistent between ruby implementations
 ObjectSpace.remove_finalizer, ObjectSpace.finalizers
+# ObjectSpace.undefine_finalizer doesn't document what the return value should be, so any value should be fine
+ObjectSpace.undefine_finalizer
 # Time stands still for no Ruby implementation
 Time.now, Time.new
-
+# Ruby and JRuby give different answers on encoding. I'd rather leave this contentious topic alone
+String#encoding
+# Concatenating an integer gives different behaviours, possibly because of encoding. Leave alone.
+String#concat, String#<<
+# Marshal is inherently implementation-dependent
+# It's not listed in implementation_dependent_classes.txt because its existence isn't neccessarily implementation dependent
+Marshal.dump, Marshal.load, Marshal.restore
