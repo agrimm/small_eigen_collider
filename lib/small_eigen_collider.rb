@@ -217,9 +217,9 @@ class SmallEigenCollider::TaskFilter::ImplementationDependentTaskFilter
     method_descriptions.each do |method_description|
       case
         # FIXME this logic isn't fully unit tested
-        when method_description =~ /^(\w+)#([?\w]+[=]?)$/
+        when method_description =~ /^(\w+)#([?\w<]+[=]?)$/
           instance_methods << {:class_name => $1, :method_name => $2}
-        when method_description =~ /^(\w+)\.([?\w]+[=]?)$/
+        when method_description =~ /^(\w+)\.([?\w<]+[=]?)$/
           class_methods << {:class_name => $1, :method_name => $2}
         else raise "Couldn't parse #{method_description.inspect}!"
       end
