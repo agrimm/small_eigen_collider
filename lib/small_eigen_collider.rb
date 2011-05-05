@@ -397,7 +397,7 @@ class SmallEigenCollider::Task
 
   def run
     begin
-      Timeout.timeout(2, IndividualTaskTimeout) do
+      Timeout.timeout(0.1, IndividualTaskTimeout) do
         # In JRuby, File.open(4) seems to make errors raise when flushing the log file
         # the crash inducing tasks filter isn't currently capable of letting all calls except when the first parameter is a Fixnum
         raise if @receiver_object == File and "open" == @method.to_s and Fixnum === @parameter_objects.first
