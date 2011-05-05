@@ -31,7 +31,7 @@ elsif File.exist?(list_filtering_configuration.fetch(:input_yaml_filename))
   task_list.dump_tasks_to_yaml(list_filtering_configuration.fetch(:output_yaml_filename))
 else
   Timeout.timeout(list_generation_configuration.fetch(:timeout), TaskListTimeout) do
-    unfiltered_task_list = SmallEigenCollider::TaskList.new_using_creator(list_generation_configuration.fetch(:iterations))
+    unfiltered_task_list = SmallEigenCollider::TaskList.new_using_creator(list_generation_configuration.fetch(:seed), list_generation_configuration.fetch(:iterations))
     unfiltered_task_list.dump_tasks_to_yaml(list_generation_configuration.fetch(:output_yaml_filename))
 
     task_list = SmallEigenCollider::TaskList.new_using_yaml(list_generation_configuration.fetch(:output_yaml_filename))

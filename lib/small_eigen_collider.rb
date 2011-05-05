@@ -148,9 +148,8 @@ end
 class SmallEigenCollider::TaskCreator
   include SmallEigenCollider::ConstantFinder
 
-  def initialize
-    # FIXME make this configurable
-    srand(42)
+  def initialize(seed)
+    srand(seed)
 
     # FIXME make an even better way of creating random objects
     @objects = []
@@ -285,8 +284,8 @@ class SmallEigenCollider::TaskList
   # empty? is just used for testing. Don't know whether it should be based on :@tasks or filtered_tasks
   def_delegators :@tasks, :empty?
 
-  def self.new_using_creator(iterations)
-    task_creator = SmallEigenCollider::TaskCreator.new
+  def self.new_using_creator(seed, iterations)
+    task_creator = SmallEigenCollider::TaskCreator.new(seed)
     tasks = iterations.times.map {task_creator.create_task}
     new(tasks)
   end
