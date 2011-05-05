@@ -9,5 +9,7 @@ Object#s_exit
 Class.new
 # Turning making GC.stress = true makes it *slow*. Don't do that!
 GC.stress=
+# If you turn off garbage collection, Ruby slows down a tad, I suspect
+GC.disable
 # At least one process method can cause problems
 Module#process
