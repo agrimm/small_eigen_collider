@@ -54,6 +54,15 @@ class StringIO
   include SmallEigenCollider::BoringInspect
 end
 
+class Thread
+  include SmallEigenCollider::BoringInspect
+end
+
+# Inspect is different between MRI 1.8 and Rubinius
+class ThreadGroup
+  include SmallEigenCollider::BoringInspect
+end
+
 class SmallEigenCollider::Logger
   def self.new_using_filename_or_filestream(filename_or_filestream)
     if filename_or_filestream.respond_to?("gets")
