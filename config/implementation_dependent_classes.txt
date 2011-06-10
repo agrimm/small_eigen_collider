@@ -13,3 +13,6 @@ Psych, Complex, Random, Syck, Gem, Encoding, Enumerator, Fiber, RubyVM, SizedQue
 Queue, WeakRef, FFI, Type, Rubinius, ImmediateValue
 # 1.9.3 only?
 TSort
+# The code shouldn't be complaining because the Syck parser gets inspected differently,
+# or there's Syck in one but Psych in the other
+YAML

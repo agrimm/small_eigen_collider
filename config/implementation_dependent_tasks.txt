@@ -33,3 +33,10 @@ String#concat, String#<<
 Marshal.dump, Marshal.load, Marshal.restore
 # 1.9.3 only?
 # Date.new_r!, String#byteslice
+# Numeric#to_sym works in MRI returning nil, but fails in Rubinius. As returning nil is not very useful, it's not
+# really worth complaining about
+Numeric#to_sym
+# The total number of threads that currently exist isn't very important
+Thread.list
+# Process.getpgrp is different each time a new process is created
+Process.getpgrp
