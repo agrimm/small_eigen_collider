@@ -11,3 +11,5 @@ Psych, Complex, Random, Syck, Gem, Encoding, Enumerator, Fiber, RubyVM, SizedQue
 # Queue isn't rubinius only, but it appearing without requiring thread is unique
 # WeakRef isn't rubinius only, but it appearing without requiring weakref is
 Queue, WeakRef, FFI, Type, Rubinius, ImmediateValue
+# 1.9.3 only?
+TSort

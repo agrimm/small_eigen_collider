@@ -31,3 +31,5 @@ String#concat, String#<<
 # Marshal is inherently implementation-dependent
 # It's not listed in implementation_dependent_classes.txt because its existence isn't neccessarily implementation dependent
 Marshal.dump, Marshal.load, Marshal.restore
+# 1.9.3 only?
+# Date.new_r!, String#byteslice
