@@ -17,20 +17,20 @@ runner_configurations = YAML.load_file("config/runner.yml")
 list_filtering_configuration = runner_configurations.fetch(:list_filtering)
 list_generation_configuration = runner_configurations.fetch(:list_generation)
 
-if File.exist?(list_filtering_configuration.fetch(:output_yaml_filename))
-  task_list = SmallEigenCollider::TaskList.new_using_yaml(list_filtering_configuration.fetch(:output_yaml_filename))
-  task_list.run_and_log_each_task(determine_output_filename)
-elsif File.exist?(list_filtering_configuration.fetch(:input_yaml_filename))
-  # This should only happen if you created an unfiltered task list, and then it crashed
-  # and you're trying to re-run it
-  task_list = SmallEigenCollider::TaskList.new_using_yaml(list_filtering_configuration.fetch(:input_yaml_filename))
-  list_filtering_configuration.fetch(:filters).each do |filter|
-    task_list.add_filter(filter)
-  end
-  task_list.run_and_log_each_task(determine_output_filename)
-  task_list.dump_tasks_to_yaml(list_filtering_configuration.fetch(:output_yaml_filename))
-else
-  Timeout.timeout(list_generation_configuration.fetch(:timeout), TaskListTimeout) do
+Timeout.timeout(list_generation_configuration.fetch(:timeout), TaskListTimeout) do
+  if File.exist?(list_filtering_configuration.fetch(:output_yaml_filename))
+    task_list = SmallEigenCollider::TaskList.new_using_yaml(list_filtering_configuration.fetch(:output_yaml_filename))
+    task_list.run_and_log_each_task(determine_output_filename)
+  elsif File.exist?(list_filtering_configuration.fetch(:input_yaml_filename))
+    # This should only happen if you created an unfiltered task list, and then it crashed
+    # and you're trying to re-run it
+    task_list = SmallEigenCollider::TaskList.new_using_yaml(list_filtering_configuration.fetch(:input_yaml_filename))
+    list_filtering_configuration.fetch(:filters).each do |filter|
+      task_list.add_filter(filter)
+    end
+    task_list.run_and_log_each_task(determine_output_filename)
+    task_list.dump_tasks_to_yaml(list_filtering_configuration.fetch(:output_yaml_filename))
+  else
     unfiltered_task_list = SmallEigenCollider::TaskList.new_using_creator(list_generation_configuration.fetch(:seed), list_generation_configuration.fetch(:iterations))
     unfiltered_task_list.dump_tasks_to_yaml(list_generation_configuration.fetch(:output_yaml_filename))
 
